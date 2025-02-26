@@ -22,7 +22,7 @@ createContactTypeTable();
 
 const ContactType = {
   // Create a new contact type
-  create: async (name, slug, user_id) => {
+  create: async ({ name, slug, user_id }) => {
     const query = `
       INSERT INTO contact_type (name, slug, user_id)
       VALUES ($1, $2, $3) RETURNING *;
@@ -42,6 +42,18 @@ const ContactType = {
   findById: async (id) => {
     const query = `SELECT * FROM contact_type WHERE id = $1 AND deleted_at IS NULL;`;
     const result = await pool.query(query, [id]);
+    return result.rows[0];
+  },
+
+  // Update a contact type
+  update: async (id, { name, slug }) => {
+    const query = `
+      UPDATE contact_type 
+      SET name = $1, slug = $2, updated_at = NOW() 
+      WHERE id = $3 AND deleted_at IS NULL 
+      RETURNING *;
+    `;
+    const result = await pool.query(query, [name, slug, id]);
     return result.rows[0];
   },
 

@@ -28,7 +28,7 @@ createContactsTable();
 
 const Contact = {
   // Create a new contact
-  create: async (name, phone, email, type, address, city, county, status, user_id) => {
+  create: async ({ name, phone, email, type, address, city, county, status, user_id }) => {
     const query = `
       INSERT INTO contacts (name, phone, email, type, address, city, county, status, user_id)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
@@ -53,11 +53,11 @@ const Contact = {
   },
 
   // Update contact details
-  update: async (id, name, phone, email, type, address, city, county, status) => {
+  update: async (id, { name, phone, email, type, address, city, county, status }) => {
     const query = `
       UPDATE contacts 
       SET name = $1, phone = $2, email = $3, type = $4, address = $5, city = $6, county = $7, status = $8, updated_at = NOW()
-      WHERE id = $9 RETURNING *;
+      WHERE id = $9 AND deleted_at IS NULL RETURNING *;
     `;
     const values = [name, phone, email, type, address, city, county, status, id];
     const result = await pool.query(query, values);
