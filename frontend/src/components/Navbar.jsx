@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Navbar as BootstrapNavbar, Nav, Container, Offcanvas, Button, Badge } from "react-bootstrap";
 import { RiPieChartFill } from "react-icons/ri";
 import { GiCardboardBoxClosed } from "react-icons/gi";
@@ -12,6 +12,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Sidebar from "./Sidebar";
 
 const Navbar = () => {
+  const location = useLocation();
   const [showSidebar, setShowSidebar] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [order, setOrder] = useState(false);
@@ -120,7 +121,10 @@ const Navbar = () => {
           </BootstrapNavbar.Collapse>
         </Container>
       </BootstrapNavbar>
+      {
+        location.pathname !=="/orders" && 
       <Sidebar order={order}/>
+}
     </>
   );
 };

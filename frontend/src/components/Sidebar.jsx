@@ -25,19 +25,19 @@ const Sidebar = ({ order }) => {
 
   // Additional menu items when order is true
   const orderMenuItems = [
-    { label: "Order Summary", icon: <TfiLayoutGrid2 className="me-2" />, path: "/order-summary" },
-    { label: "Order Entry",icon: <PiClipboardText className="me-2" />, path: "/order-entry" },
-    { label: "Data Access", icon: <BsDatabaseCheck className="me-2" />,path: "/data-access" },
-    { label: "Property Tax",icon: <PiNewspaperClippingThin className="me-2" />, path: "/property-tax" },
-    { label: "Worksheet", icon: <LuFileSpreadsheet className="me-2" />,path: "/worksheet" },
-    { label: "Tasks",icon: <FaTasks className="me-2" />, path: "/tasks" },
-    { label: "Documents", icon: <HiOutlineDocumentText className="me-2" />,path: "/documents" },
-    { label: "File History",icon: <RiFileHistoryLine className="me-2" />, path: "/file-history" },
-    { label: "Recording",icon: <PiBooksLight className="me-2" />, path: "/recording" },
-    { label: "Notes",icon: <SlNote className="me-2" />, path: "/notes" },
-    { label: "Email",icon: <MdOutlineEmail className="me-2" />, path: "/email" },
-    { label: "Accounting",icon: <CiDollar className="me-2" />, path: "/accounting" },
-    { label: "Custom Fields",icon: <LuClipboardPenLine className="me-2" />, path: "/custom-fields" },
+    { label: "Order Summary", icon: <TfiLayoutGrid2 className="me-2" />, path: "/order-summary", info : "Order-Summary"},
+    { label: "Order Entry",icon: <PiClipboardText className="me-2" />, path: "/order-entry", info : "Order Entry" },
+    { label: "Data Access", icon: <BsDatabaseCheck className="me-2" />,path: "/data-access", info : "Data Access" },
+    { label: "Property Tax",icon: <PiNewspaperClippingThin className="me-2" />, path: "/property-tax", info : "Property Tax" },
+    { label: "Worksheet", icon: <LuFileSpreadsheet className="me-2" />,path: "/worksheet", info : "Worksheet" },
+    { label: "Tasks",icon: <FaTasks className="me-2" />, path: "/tasks", info : "Tasks" },
+    { label: "Documents", icon: <HiOutlineDocumentText className="me-2" />,path: "/documents", info : "Documents" },
+    { label: "File History",icon: <RiFileHistoryLine className="me-2" />, path: "/file-history", info : "File History" },
+    { label: "Recording",icon: <PiBooksLight className="me-2" />, path: "/recording", info : "Recording" },
+    { label: "Notes",icon: <SlNote className="me-2" />, path: "/notes", info : "Notes" },
+    { label: "Email",icon: <MdOutlineEmail className="me-2" />, path: "/email", info : "Order-Summary" },
+    { label: "Accounting",icon: <CiDollar className="me-2" />, path: "/accounting", info : "Accounting" },
+    { label: "Custom Fields",icon: <LuClipboardPenLine className="me-2" />, path: "/custom-fields", info : "Custom Fields" },
   ];
 
   return (
@@ -55,11 +55,15 @@ const Sidebar = ({ order }) => {
           left: "0",
           padding: "20px",
           overflowY: "auto",
+          borderRight: "2px solid #ddd", 
+          marginLeft: "-10px"
         }}
       >
-        <h5 style={{ color: "black", fontSize: "1.2rem" }} className="mb-4">
-          {value}
-        </h5>
+        <h5 style={{ color: "black", fontSize: "1.2rem" }} className="mb-2">
+  {value}
+  </h5>
+    <hr style={{ borderTop: "2px solid rgb(1,1,1)" }} />
+
         <Nav className="flex-column">
           {order && (
             <>

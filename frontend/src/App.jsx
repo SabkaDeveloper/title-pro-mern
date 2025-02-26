@@ -4,9 +4,10 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login"; 
 import ForgotPassword from "./pages/ForgetPassword";
-import Sidebar from "./components/Sidebar";
+import Dashboard from "./pages/Dashboard";
+import Orders from "./pages/order/Orders";
 
-const Layout = ({ children }) => {
+const Layout = ({ children, order }) => {
   const location = useLocation();
 
   return (
@@ -24,6 +25,8 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/" element={<Dashboard />}/>
+          <Route path="/orders" element={<Orders/>}/>
         </Routes>
       </Layout>
     </Router>
