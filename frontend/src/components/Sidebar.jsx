@@ -46,7 +46,7 @@ const Sidebar = ({ order }) => {
       <div
         className="d-none d-lg-block"
         style={{
-          width: "250px",
+          width: "210px",
           height: "100vh",
           backgroundColor: "rgb(255, 255, 255)",
           color: "black",

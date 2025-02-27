@@ -123,6 +123,7 @@ const Navbar = () => {
       </BootstrapNavbar>
       {
         location.pathname !=="/orders" && 
+        location.pathname !=="/contacts" && 
       <Sidebar order={order}/>
 }
     </>
