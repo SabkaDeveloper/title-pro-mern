@@ -1,36 +1,71 @@
 import React, { useState, useEffect } from "react";
-import { Table, Pagination, Form, Button } from "react-bootstrap";
+import { Table, Pagination, Form, Button, Row, Col, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import ContactModal from "./ContactModal"; // Make sure ContactModal is correctly imported
+import ContactModal from "./ContactModal"; 
+import { FaSearch } from "react-icons/fa";
+import FilterBtn from "./FilterBtn";
+import UpdateBtn from "./UpdateBtn";
 
 const ContactList = () => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState(1);
-  const [contacts, setContacts] = useState([]); 
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [contacts, setContacts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const contactsPerPage = 10;
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      try {
-        const response = await fetch("http://localhost:4000/api/v1/contacts");
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          setContacts(data.data);
-        } else {
-          setContacts([]);
-        }
-      } catch (error) {
-        console.error("Error fetching contacts:", error);
-        setContacts([]); 
-      }
-    };
+  // Fetch all contacts
+  const fetchAllContacts = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/v1/contacts");
+      const data = await response.json();
 
-    fetchContacts();
+      if (data.success && Array.isArray(data.data)) {
+        setContacts(data.data);
+      } else {
+        setContacts([]);
+      }
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      setContacts([]);
+    }
+  };
+
+  // Fetch contacts by search term
+  const fetchContactsBySearch = async (searchTerm) => {
+    try {
+      if (!searchTerm) {
+        fetchAllContacts();
+        return;
+      }
+
+      const url = isNaN(searchTerm)
+        ? `http://localhost:4000/api/v1/contacts/${encodeURIComponent(searchTerm)}`
+        : `http://localhost:4000/api/v1/contacts/${searchTerm}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.success) {
+        setContacts(Array.isArray(data.data) ? data.data : [data.data]);
+      } else {
+        setContacts([]);
+      }
+    } catch (error) {
+      console.error("Error fetching searched contacts:", error);
+      setContacts([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllContacts();
   }, []);
 
+  const handleSearch = () => {
+    fetchContactsBySearch(searchTerm);
+  };
 
-  const totalPages = Math.ceil(contacts.length / contactsPerPage);
+  const totalPages = Math.max(1, Math.ceil(contacts.length / contactsPerPage));
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -39,17 +74,17 @@ const ContactList = () => {
   };
 
   const startIndex = (activePage - 1) * contactsPerPage;
-  const endIndex = startIndex + contactsPerPage;
-  const displayedContacts = contacts.slice(startIndex, endIndex);
+  const displayedContacts = contacts.slice(startIndex, startIndex + contactsPerPage);
 
   return (
-    <div className="container-fluid p-0">
-      <h3 style={{ marginTop: "-20px", marginLeft: "-80px" }}>Contact List</h3>
+    <Container fluid>
+      <h3 className="mt-1">Contact List</h3>
 
-      <ul className="nav nav-tabs" style={{ marginLeft: "-80px", width: "110%", borderBottom: "3px solid #dee2e6" }}>
+      {/* Tabs */}
+      <ul className="nav nav-tabs">
         <li className="nav-item">
-          <button className="nav-link active" onClick={() => navigate("/active-contacts")}>
-            Active
+        <button className="nav-link active" onClick={() => navigate("/contacts")}>
+        Active
           </button>
         </li>
         <li className="nav-item">
@@ -59,14 +94,41 @@ const ContactList = () => {
         </li>
       </ul>
 
-      <div className="d-flex justify-content-between my-3">
-        <Form.Control type="text" placeholder="Contact Name" style={{ maxWidth: "250px", marginLeft: "610px" }} />
-        <Form.Control type="text" placeholder="Search Active Contacts..." style={{ maxWidth: "350px" }} />
-        <ContactModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
-        </div>
+      {/* Search & Filters */}
+      <Row className="align-items-center my-3 g-2">
+        <Col xs={12} sm={6} md={3}>
+          <Form.Control type="text" placeholder="Contact Name" />
+        </Col>
 
-      <div style={{ marginLeft: "-100px", marginRight: "-100px" }} className="table-responsive w-300">
-        <Table striped bordered hover className="small w-100">
+        <Col xs={12} sm={6} md={5}>
+          <div className="input-group">
+            <Form.Control
+              type="text"
+              placeholder="Search Active Contacts..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Button variant="outline-secondary" onClick={handleSearch}>
+              <FaSearch />
+            </Button>
+          </div>
+        </Col>
+
+        <Col xs={6} sm={3} md="auto">
+          <ContactModal isOpen={isModalOpen} setIsOpen={setIsModalOpen} />
+        </Col>
+
+        <Col xs={6} sm={3} md="auto">
+          <FilterBtn />
+        </Col>
+        <Col xs={6} sm={3} md="auto">
+          <UpdateBtn />
+        </Col>
+      </Row>
+
+      {/* Contacts Table */}
+      <div className="table-responsive">
+        <Table striped bordered hover className="small w-200">
           <thead>
             <tr>
               <th>Name</th>
@@ -88,7 +150,7 @@ const ContactList = () => {
                 <td>{contact.phone}</td>
                 <td>{contact.email}</td>
                 <td>Net 30</td>
-                <td>{contact.createdBy}</td>
+                <td>{contact.name}</td>
                 <td>{contact.created_at}</td>
               </tr>
             ))}
@@ -96,7 +158,8 @@ const ContactList = () => {
         </Table>
       </div>
 
-      <Pagination className="justify-content-center">
+      {/* Pagination */}
+      <Pagination className="justify-content-center flex-wrap">
         <Pagination.Prev disabled={activePage === 1} onClick={() => handlePageChange(activePage - 1)} />
         {[...Array(totalPages).keys()].slice(0, 5).map((page) => (
           <Pagination.Item key={page} active={page + 1 === activePage} onClick={() => handlePageChange(page + 1)}>
@@ -106,8 +169,7 @@ const ContactList = () => {
         {totalPages > 5 && <Pagination.Ellipsis />}
         <Pagination.Next disabled={activePage === totalPages} onClick={() => handlePageChange(activePage + 1)} />
       </Pagination>
-
-    </div>
+    </Container>
   );
 };
 

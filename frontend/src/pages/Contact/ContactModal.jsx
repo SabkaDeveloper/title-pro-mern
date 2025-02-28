@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Form, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
+import { MdAddCircleOutline } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 
@@ -207,7 +208,7 @@ function ContactModal() {
               />
             </Form.Group>
 
-            <Button style={{marginTop: "10px"}} variant="primary" type="submit">
+            <Button style={{marginTop: "10px"}} variant="success" type="submit">
               Submit
             </Button>
           </Form>
@@ -219,7 +220,9 @@ function ContactModal() {
   return (
     <div>
       <Button variant="primary" onClick={() => setModalShow(true)}>
-        + Add
+        <div className='fw-bold'> 
+      <MdAddCircleOutline /> Add
+        </div>
       </Button>
 
       <MyVerticallyCenteredModal

@@ -20,8 +20,8 @@ const Navbar = () => {
   return (
     <>
       {/* Top Navbar */}
-      <BootstrapNavbar expand="lg" style={{ backgroundColor: "#03233d" }} variant="dark">
-        <Container fluid>
+      <BootstrapNavbar expand="lg" style={{ backgroundColor: "#03233d", position: "sticky", top: 0, zIndex: 1030 }} variant="dark">
+      <Container fluid>
           {/* Sidebar Toggle Button for Small Screens */}
           <Button
             variant="outline-light"
@@ -124,8 +124,10 @@ const Navbar = () => {
       {
         location.pathname !=="/orders" && 
         location.pathname !=="/contacts" && 
-      <Sidebar order={order}/>
+        location.pathname !=="/deleted-contacts" && 
+      <Sidebar order={order} isAdmin={location.pathname === "/admin"}/>
 }
+
     </>
   );
 };

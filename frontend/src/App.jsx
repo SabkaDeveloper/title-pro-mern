@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/order/Orders";
 import ContactList from "./pages/Contact/ContactList";
 import AdminDashboard from "./pages/admin/Admin";
+import DeleteContact from "./pages/Contact/DeleteContact";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="/" element={<Dashboard />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/contacts" element={<ContactList />} />
+          <Route path="/deleted-contacts" element={<DeleteContact />} />
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </Layout>

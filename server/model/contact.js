@@ -27,7 +27,7 @@ const createContactsTable = async () => {
 createContactsTable();
 
 const Contact = {
-  // Create a new contact
+  // Create a new contact   // tell changes in this
   create: async ({ name, phone, email, type, address, city, county, status, user_id }) => {
     const query = `
       INSERT INTO contacts (name, phone, email, type, address, city, county, status, user_id)
