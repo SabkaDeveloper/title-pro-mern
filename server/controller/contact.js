@@ -57,3 +57,14 @@ exports.deleteContact = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error deleting contact" });
   }
 };
+
+// Get all deleted contacts
+exports.getDeletedContacts = async (req, res) => {
+  try {
+    const deletedContacts = await Contact.findDeleted();
+    return res.status(200).json({ success: true, data: deletedContacts });
+  } catch (error) {
+    console.error("Error fetching deleted contacts:", error);
+    return res.status(500).json({ success: false, message: "Error fetching deleted contacts" });
+  }
+};

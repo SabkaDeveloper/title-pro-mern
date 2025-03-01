@@ -11,7 +11,8 @@ const {
 const { auth } = require("../middleware/auth");
 const contactController = require("../controller/contact");
 const contactTypeController = require("../controller/contactType");
-const orderEntryController = require("../controller/orderEntry"); // Updated
+const orderEntryController = require("../controller/orderEntry");
+const orderController = require("../controller/order");
 
 // ********************************************************************************************************
 //                                      Authentication Routes
@@ -30,66 +31,43 @@ router.post("/change-password", auth, validateChangePassword, changePassword);
 //                                      Contact Management Routes
 // ********************************************************************************************************
 
-// Create a new contact
 router.post("/contacts", contactController.createContact);
-
-// Get all contacts
 router.get("/contacts", contactController.getAllContacts);
-
-// Get a specific contact by ID
 router.get("/contacts/:id", contactController.getContactById);
-
-// Update a contact
 router.put("/contacts/:id", contactController.updateContact);
-
-// Soft delete a contact
 router.delete("/contacts/:id", contactController.deleteContact);
-
-// Get all deleted contacts
 router.get("/contacts/deleted", contactController.getDeletedContacts);
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
 // ********************************************************************************************************
 
-// Create a new contact type
 router.post("/contact-types", contactTypeController.createContactType);
-
-// Get all contact types
 router.get("/contact-types", contactTypeController.getAllContactTypes);
-
-// Get a specific contact type by ID
 router.get("/contact-types/:id", contactTypeController.getContactTypeById);
-
-// Soft delete a contact type
 router.delete("/contact-types/:id", contactTypeController.deleteContactType);
-
-// Get all deleted contact types
 router.get("/contact-types/deleted", contactTypeController.getDeletedContactTypes);
 
 // ********************************************************************************************************
-//                                      Order Entry Management Routes (Updated)
+//                                      Order Entry Management Routes
 // ********************************************************************************************************
 
-// Create a new OrderEntry
 router.post("/order-entries", orderEntryController.createOrderEntry);
-
-// Get all active OrderEntries
 router.get("/order-entries", orderEntryController.getAllOrderEntries);
-
-// // Get all deleted OrderEntries
-// router.get("/order-entries/deleted", orderEntryController.getAllDeletedOrderEntries);
-
-// // Get all completed OrderEntries
-// router.get("/order-entries/completed", orderEntryController.getAllCompletedOrderEntries);
-
-// Get a specific OrderEntry by ID
 router.get("/order-entries/:id", orderEntryController.getOrderEntryById);
-
-// Update an OrderEntry
 router.put("/order-entries/:id", orderEntryController.updateOrderEntry);
-
-// Soft delete an OrderEntry
 router.delete("/order-entries/:id", orderEntryController.softDeleteOrderEntry);
+
+// ********************************************************************************************************
+//                                      Order Management Routes
+// ********************************************************************************************************
+
+router.post("/orders", orderController.createOrder);
+router.get("/orders", orderController.getAllOrders);
+router.get("/orders/deleted", orderController.getAllDeletedOrders);
+router.get("/orders/completed", orderController.getAllCompletedOrders);
+router.get("/orders/:id", orderController.getOrderById);
+router.put("/orders/:id", orderController.updateOrder);
+router.delete("/orders/:id", orderController.softDeleteOrder);
 
 module.exports = router;
