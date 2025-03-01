@@ -38,6 +38,13 @@ const ContactType = {
     return result.rows;
   },
 
+  // Get all deleted contact types
+  findDeleted: async () => {
+    const query = `SELECT * FROM contact_type WHERE deleted_at IS NOT NULL;`;
+    const result = await pool.query(query);
+    return result.rows;
+  },
+
   // Get a contact type by ID
   findById: async (id) => {
     const query = `SELECT * FROM contact_type WHERE id = $1 AND deleted_at IS NULL;`;

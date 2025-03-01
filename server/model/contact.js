@@ -27,7 +27,7 @@ const createContactsTable = async () => {
 createContactsTable();
 
 const Contact = {
-  // Create a new contact   // tell changes in this
+  // Create a new contact
   create: async ({ name, phone, email, type, address, city, county, status, user_id }) => {
     const query = `
       INSERT INTO contacts (name, phone, email, type, address, city, county, status, user_id)
@@ -41,6 +41,13 @@ const Contact = {
   // Get all contacts
   findAll: async () => {
     const query = `SELECT * FROM contacts WHERE deleted_at IS NULL;`;
+    const result = await pool.query(query);
+    return result.rows;
+  },
+
+  // Get all deleted contacts
+  findDeleted: async () => {
+    const query = `SELECT * FROM contacts WHERE deleted_at IS NOT NULL;`;
     const result = await pool.query(query);
     return result.rows;
   },
