@@ -1,61 +1,74 @@
 const pool = require("../config/database");
-const slugify = require("slugify"); 
-
-// Function to create the Contact Type table
-const createContactTypeTable = async () => {
-  const query = `
-    CREATE TABLE IF NOT EXISTS contact_type (
-      id SERIAL PRIMARY KEY,
-      contact_type VARCHAR(100) NOT NULL,
-      slug VARCHAR(100) UNIQUE NOT NULL,
-      user_id INT NOT NULL DEFAULT 1,  -- Default user_id = 1
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      deleted_at TIMESTAMP NULL
-    );
-  `;
-  await pool.query(query);
-  console.log("✅ Contact Type table created successfully");
-};
-
-// Run the function to create the table
-createContactTypeTable();
+const slugify = require("slugify");
 
 const ContactType = {
-  // Create a new contact type
+  // Create a new contact type with Admin user_id
   create: async ({ contact_type }) => {
-    const slug = slugify(contact_type, { lower: true, strict: true });
-    const user_id = 1; 
+    try {
+      const slug = slugify(contact_type, { lower: true, strict: true });
 
-    const query = `
-      INSERT INTO contact_type (contact_type, slug, user_id)
-      VALUES ($1, $2, $3) RETURNING id, contact_type, slug;
-    `;
+    
+      const adminQuery = `SELECT id FROM users WHERE LOWER(role) = 'admin' ORDER BY id ASC LIMIT 1;`;
 
-    const result = await pool.query(query, [contact_type, slug, user_id]);
-    return result.rows[0]; 
+      const adminResult = await pool.query(adminQuery);
+
+      if (adminResult.rows.length === 0) {
+        throw new Error("No Admin user found");
+      }
+
+      const user_id = adminResult.rows[0].id; 
+
+      // Insert new contact type
+      const query = `
+        INSERT INTO contact_type (contact_type, slug, user_id)
+        VALUES ($1, $2, $3) 
+        RETURNING id, contact_type, slug, user_id;
+      `;
+
+      const result = await pool.query(query, [contact_type, slug, user_id]);
+      return result.rows[0]; 
+
+    } catch (error) {
+      console.error("Error creating contact type:", error.message);
+      throw error;
+    }
   },
 
-  // Get all contact types
+  // Fetch all contact types
   findAll: async () => {
-    const query = `SELECT id, contact_type, slug FROM contact_type WHERE deleted_at IS NULL;`;
-    const result = await pool.query(query);
-    return result.rows;
+    try {
+      const query = `SELECT * FROM contact_type;`;
+      const result = await pool.query(query);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching contact types:", error.message);
+      throw error;
+    }
   },
 
-  // Get a contact type by ID
+  // Get a single contact type by ID
   findById: async (id) => {
-    const query = `SELECT id, contact_type, slug FROM contact_type WHERE id = $1 AND deleted_at IS NULL;`;
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
+    try {
+      const query = `SELECT * FROM contact_type WHERE id = $1;`;
+      const result = await pool.query(query, [id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error fetching contact type by ID:", error.message);
+      throw error;
+    }
   },
 
-  // Soft delete a contact type
-  softDelete: async (id) => {
-    const query = `UPDATE contact_type SET deleted_at = NOW() WHERE id = $1 RETURNING id, contact_type, slug;`;
-    const result = await pool.query(query, [id]);
-    return result.rows[0];
-  },
+  // Delete a contact type by ID
+  delete: async (id) => {
+    try {
+      const query = `DELETE FROM contact_type WHERE id = $1 RETURNING *;`;
+      const result = await pool.query(query, [id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error deleting contact type:", error.message);
+      throw error;
+    }
+  }
 };
 
 module.exports = ContactType;

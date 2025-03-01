@@ -5,12 +5,12 @@ const { check } = require("express-validator");
 
 dotenv.config();
 
-// 🔹 Validation Middleware for Auth (if needed)
+// 🔹 Validation Middleware (Optional)
 exports.validateAuth = [
   check("token").optional().isString().withMessage("Token must be a valid string"),
 ];
 
-// 🔹 Authentication Middleware
+// 🔹 Authentication Middleware (Validates Token & Fetches User)
 exports.auth = async (req, res, next) => {
   try {
     const token = extractToken(req);
@@ -22,6 +22,7 @@ exports.auth = async (req, res, next) => {
       });
     }
 
+    // Verify and decode token
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -32,10 +33,9 @@ exports.auth = async (req, res, next) => {
       });
     }
 
-    const { rows } = await pool.query(
-      "SELECT id, name, email, role FROM users WHERE id = $1",
-      [decoded.id]
-    );
+    // Fetch user details from database
+    const query = "SELECT id, name, email, role FROM users WHERE id = $1 LIMIT 1;";
+    const { rows } = await pool.query(query, [decoded.id]);
 
     if (rows.length === 0) {
       return res.status(401).json({
@@ -48,10 +48,10 @@ exports.auth = async (req, res, next) => {
     next();
 
   } catch (error) {
-    console.error("Auth Middleware Error:", error);
+    console.error("Auth Middleware Error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Error while validating token",
+      message: "Internal server error during authentication",
     });
   }
 };
@@ -60,15 +60,23 @@ exports.auth = async (req, res, next) => {
 exports.authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     try {
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "User authentication required",
+        });
+      }
+
       if (!allowedRoles.includes(req.user.role)) {
         return res.status(403).json({
           success: false,
           message: `Access denied for role: ${req.user.role}`,
         });
       }
+
       next();
     } catch (error) {
-      console.error("Role Authorization Error:", error);
+      console.error("Role Authorization Error:", error.message);
       return res.status(500).json({
         success: false,
         message: "Error verifying user role",
@@ -78,29 +86,10 @@ exports.authorizeRoles = (...allowedRoles) => {
 };
 
 // 🔹 Admin-only Access Middleware
-exports.adminAuth = (req, res, next) => {
-  try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Access restricted to admins only",
-      });
-    }
-    next();
-  } catch (error) {
-    console.error("Admin Auth Error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error verifying admin access",
-    });
-  }
-};
+exports.adminAuth = exports.authorizeRoles("admin");
 
-// 🔹 Utility: Extract token from headers or body
+// 🔹 Utility: Extract Token from Headers
 function extractToken(req) {
   const authHeader = req.header("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.replace("Bearer ", "");
-  }
-  return req.body.token || null; // Fallback to body token (optional)
+  return authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 }

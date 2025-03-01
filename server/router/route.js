@@ -9,10 +9,12 @@ const {
   validateSignup 
 } = require("../controller/Auth");
 const { auth } = require("../middleware/auth");
+const adminAuth = require("../middleware/adminAuth");
 const contactController = require("../controller/contact");
 const contactTypeController = require("../controller/contactType");
 const orderController = require("../controller/order");
-const orderEntryController = require("../controller/orderEntry"); 
+const orderEntryController = require("../controller/orderEntry");
+const orderSummaryController = require("../controller/ordersummary");
 
 // ********************************************************************************************************
 //                                      Authentication Routes
@@ -34,11 +36,14 @@ router.get("/contacts/deleted", contactController.getDeletedContacts);
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
 // ********************************************************************************************************
-router.post("/contact-types", contactTypeController.createContactType);
+// Admin-only routes (Create, Delete, Restore)
+router.post("/contact-types", auth, adminAuth, contactTypeController.createContactType);
+router.delete("/contact-types/:id", auth, adminAuth, contactTypeController.deleteContactType);
+router.put("/contact-types/:id/restore", auth, adminAuth, contactTypeController.restoreContactType);
+
+// Public routes (Anyone can access)
 router.get("/contact-types", contactTypeController.getAllContactTypes);
 router.get("/contact-types/:id", contactTypeController.getContactTypeById);
-router.delete("/contact-types/:id", contactTypeController.deleteContactType);
-router.get("/contact-types/deleted", contactTypeController.getDeletedContactTypes);
 
 // ********************************************************************************************************
 //                                      Order Management Routes
@@ -59,5 +64,14 @@ router.get("/order-entries", orderEntryController.getAllOrderEntries);
 router.get("/order-entries/:id", orderEntryController.getOrderEntryById); 
 router.put("/order-entries/:id", orderEntryController.updateOrderEntry); 
 router.delete("/order-entries/:id", orderEntryController.deleteOrderEntry); 
+
+// ********************************************************************************************************
+//                                      Order Summary Management Routes
+// ********************************************************************************************************
+router.get("/order-summaries", orderSummaryController.getAllOrderSummaries);
+router.get("/order-summaries/:orderNumber", orderSummaryController.getOrderSummaryByOrderNumber);
+// router.get("/order-summaries/:orderNumber/status", orderSummaryController.getOrderSummariesByOrderNumberAndStatus);
+// router.get("/order-summaries/date-range", orderSummaryController.getOrderSummariesByDateRange);
+router.get("/order-summaries/:orderNumber/order-status", orderSummaryController.getOrderStatusByOrderNumber);
 
 module.exports = router;
