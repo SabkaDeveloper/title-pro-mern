@@ -12,7 +12,7 @@ const { auth } = require("../middleware/auth");
 const contactController = require("../controller/contact");
 const contactTypeController = require("../controller/contactType");
 const orderController = require("../controller/order");
-const orderEntryController = require("../controller/orderEntry"); // ✅ Added Order Entry Controller
+const orderEntryController = require("../controller/orderEntry"); 
 
 // ********************************************************************************************************
 //                                      Authentication Routes
@@ -54,10 +54,10 @@ router.delete("/orders/:id", orderController.deleteOrder);
 // ********************************************************************************************************
 //                                      Order Entry Management Routes
 // ********************************************************************************************************
-router.post("/order-entries", orderEntryController.createOrderEntry);  // ✅ Create Order Entry
-router.get("/order-entries", orderEntryController.getAllOrderEntries); // ✅ Get All Order Entries
-router.get("/order-entries/:id", orderEntryController.getOrderEntryById); // ✅ Get Order Entry by ID
-router.put("/order-entries/:id", orderEntryController.updateOrderEntry); // ✅ Update Order Entry
-router.delete("/order-entries/:id", orderEntryController.deleteOrderEntry); // ✅ Delete Order Entry
+router.post("/order-entries", orderEntryController.createOrderEntry); 
+router.get("/order-entries", orderEntryController.getAllOrderEntries);
+router.get("/order-entries/:id", orderEntryController.getOrderEntryById); 
+router.put("/order-entries/:id", orderEntryController.updateOrderEntry); 
+router.delete("/order-entries/:id", orderEntryController.deleteOrderEntry); 
 
 module.exports = router;

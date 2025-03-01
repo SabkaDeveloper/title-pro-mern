@@ -23,7 +23,6 @@ const createContactsTable = async () => {
   console.log("✅ Contacts table created successfully");
 };
 
-// Run the function to create the table
 createContactsTable();
 
 const Contact = {

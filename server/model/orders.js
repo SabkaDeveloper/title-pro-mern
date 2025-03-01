@@ -22,7 +22,6 @@ const createOrdersTable = async () => {
     console.log("✅ Orders table created successfully");
 };
 
-// Run the function to create the table
 createOrdersTable();
 
 const Order = {
