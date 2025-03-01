@@ -7,7 +7,7 @@ const createOrderEntry = async (req, res) => {
         return res.status(201).json({ success: true, data: newOrderEntry });
     } catch (error) {
         console.error("Error creating order entry:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
@@ -18,7 +18,7 @@ const getAllOrderEntries = async (req, res) => {
         return res.status(200).json({ success: true, data: orderEntries });
     } catch (error) {
         console.error("Error fetching order entries:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
@@ -35,7 +35,7 @@ const getOrderEntryById = async (req, res) => {
         return res.status(200).json({ success: true, data: orderEntry });
     } catch (error) {
         console.error("Error fetching order entry:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
@@ -52,7 +52,7 @@ const updateOrderEntry = async (req, res) => {
         return res.status(200).json({ success: true, data: updatedOrderEntry });
     } catch (error) {
         console.error("Error updating order entry:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
@@ -69,7 +69,7 @@ const deleteOrderEntry = async (req, res) => {
         return res.status(200).json({ success: true, message: "Order entry deleted successfully" });
     } catch (error) {
         console.error("Error deleting order entry:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        return res.status(500).json({ success: false, message: error.message || "Internal server error" });
     }
 };
 
