@@ -46,12 +46,13 @@ exports.signup = async (req, res) => {
   }
 };
 
+
+// 🔹 Login Controller
 exports.validateLogin = [
   check("emailOrPhone").notEmpty().withMessage("Email or phone is required"),
   check("password").notEmpty().withMessage("Password is required"),
 ];
 
-// 🔹 Login Controller
 exports.login = async (req, res) => {
   try {
     const errors = validationResult(req);

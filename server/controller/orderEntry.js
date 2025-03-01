@@ -1,77 +1,82 @@
 const OrderEntry = require("../model/orderEntry");
 
-// ✅ Create a new OrderEntry
-exports.createOrderEntry = async (req, res) => {
-  try {
-    const newOrderEntry = await OrderEntry.create(req.body);
-    res.status(201).json({ success: true, data: newOrderEntry });
-  } catch (error) {
-    console.error("❌ Error creating OrderEntry:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to create OrderEntry" });
-  }
-};
-
-// ✅ Get all OrderEntries
-exports.getAllOrderEntries = async (req, res) => {
-  try {
-    const orderEntries = await OrderEntry.findAll();
-    res.status(200).json({ success: true, data: orderEntries });
-  } catch (error) {
-    console.error("❌ Error fetching OrderEntries:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to fetch OrderEntries" });
-  }
-};
-
-// ✅ Get OrderEntry by ID
-exports.getOrderEntryById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const orderEntry = await OrderEntry.findOne({ where: { id } });
-
-    if (!orderEntry) {
-      return res.status(404).json({ success: false, message: "OrderEntry not found" });
+// Create a new order entry
+const createOrderEntry = async (req, res) => {
+    try {
+        const newOrderEntry = await OrderEntry.create(req.body);
+        return res.status(201).json({ success: true, data: newOrderEntry });
+    } catch (error) {
+        console.error("Error creating order entry:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
-
-    res.status(200).json({ success: true, data: orderEntry });
-  } catch (error) {
-    console.error("❌ Error fetching OrderEntry:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to fetch OrderEntry" });
-  }
 };
 
-// ✅ Update OrderEntry by ID
-exports.updateOrderEntry = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [updatedRows] = await OrderEntry.update(req.body, { where: { id } });
-
-    if (!updatedRows) {
-      return res.status(404).json({ success: false, message: "OrderEntry not found or update failed" });
+// Get all order entries
+const getAllOrderEntries = async (req, res) => {
+    try {
+        const orderEntries = await OrderEntry.findAll();
+        return res.status(200).json({ success: true, data: orderEntries });
+    } catch (error) {
+        console.error("Error fetching order entries:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
-
-    // Fetch updated entry
-    const updatedOrderEntry = await OrderEntry.findOne({ where: { id } });
-
-    res.status(200).json({ success: true, data: updatedOrderEntry });
-  } catch (error) {
-    console.error("❌ Error updating OrderEntry:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to update OrderEntry" });
-  }
 };
 
-// ✅ Soft Delete OrderEntry
-exports.softDeleteOrderEntry = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const [updatedRows] = await OrderEntry.update({ deletedAt: new Date() }, { where: { id } });
+// Get a single order entry by ID
+const getOrderEntryById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const orderEntry = await OrderEntry.findById(id);
 
-    if (!updatedRows) {
-      return res.status(404).json({ success: false, message: "OrderEntry not found or already deleted" });
+        if (!orderEntry) {
+            return res.status(404).json({ success: false, message: "Order entry not found" });
+        }
+
+        return res.status(200).json({ success: true, data: orderEntry });
+    } catch (error) {
+        console.error("Error fetching order entry:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
+};
 
-    res.status(200).json({ success: true, message: "OrderEntry deleted successfully" });
-  } catch (error) {
-    console.error("❌ Error deleting OrderEntry:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to delete OrderEntry" });
-  }
+// Update an order entry
+const updateOrderEntry = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedOrderEntry = await OrderEntry.update(id, req.body);
+
+        if (!updatedOrderEntry) {
+            return res.status(404).json({ success: false, message: "Order entry not found" });
+        }
+
+        return res.status(200).json({ success: true, data: updatedOrderEntry });
+    } catch (error) {
+        console.error("Error updating order entry:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// Delete an order entry (Hard Delete)
+const deleteOrderEntry = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedOrderEntry = await OrderEntry.delete(id);
+
+        if (!deletedOrderEntry) {
+            return res.status(404).json({ success: false, message: "Order entry not found" });
+        }
+
+        return res.status(200).json({ success: true, message: "Order entry deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting order entry:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+module.exports = {
+    createOrderEntry,
+    getAllOrderEntries,
+    getOrderEntryById,
+    updateOrderEntry,
+    deleteOrderEntry
 };
