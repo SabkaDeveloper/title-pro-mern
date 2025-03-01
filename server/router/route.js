@@ -9,89 +9,69 @@ const {
   validateSignup 
 } = require("../controller/Auth");
 const { auth } = require("../middleware/auth");
+const adminAuth = require("../middleware/adminAuth");
 const contactController = require("../controller/contact");
 const contactTypeController = require("../controller/contactType");
-const orderEntryController = require("../controller/orderEntry"); // Updated
+const orderController = require("../controller/order");
+const orderEntryController = require("../controller/orderEntry");
+const orderSummaryController = require("../controller/ordersummary");
 
 // ********************************************************************************************************
 //                                      Authentication Routes
 // ********************************************************************************************************
-
-// Signup route
 router.post("/signup", validateSignup, signup);
-
-// Login route
 router.post("/login", validateLogin, login);
-
-// Change Password route (protected)
 router.post("/change-password", auth, validateChangePassword, changePassword);
 
 // ********************************************************************************************************
 //                                      Contact Management Routes
 // ********************************************************************************************************
-
-// Create a new contact
 router.post("/contacts", contactController.createContact);
-
-// Get all contacts
 router.get("/contacts", contactController.getAllContacts);
-
-// Get a specific contact by ID
-// router.get("/contacts/:id", contactController.getContactById);
-
-router.get("/contacts/:name", contactController.getContactByName);
-
-// Update a contact
-router.put("/contacts/:email", contactController.updateContact);
-
-// Soft delete a contact
-router.delete("/contacts/:name", contactController.deleteContact);
-
-// Get all deleted contacts
+router.get("/contacts/:id", contactController.getContactById);
+router.put("/contacts/:id", contactController.updateContact);
+router.delete("/contacts/:id", contactController.deleteContact);
 router.get("/contacts/deleted", contactController.getDeletedContacts);
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
 // ********************************************************************************************************
+// Admin-only routes (Create, Delete, Restore)
+router.post("/contact-types", auth, adminAuth, contactTypeController.createContactType);
+router.delete("/contact-types/:id", auth, adminAuth, contactTypeController.deleteContactType);
+router.put("/contact-types/:id/restore", auth, adminAuth, contactTypeController.restoreContactType);
 
-// Create a new contact type
-router.post("/contact-types", contactTypeController.createContactType);
-
-// Get all contact types
+// Public routes (Anyone can access)
 router.get("/contact-types", contactTypeController.getAllContactTypes);
-
-// Get a specific contact type by ID
 router.get("/contact-types/:id", contactTypeController.getContactTypeById);
 
-// Soft delete a contact type
-router.delete("/contact-types/:id", contactTypeController.deleteContactType);
-
-// Get all deleted contact types
-router.get("/contact-types/deleted", contactTypeController.getDeletedContactTypes);
+// ********************************************************************************************************
+//                                      Order Management Routes
+// ********************************************************************************************************
+router.post("/orders", orderController.createOrder);
+router.get("/orders", orderController.getAllOrders);
+router.get("/orders/deleted", orderController.getAllDeletedOrders);
+router.get("/orders/completed", orderController.getAllCompletedOrders);
+router.get("/orders/:id", orderController.getOrderById);
+router.put("/orders/:id", orderController.updateOrder);
+router.delete("/orders/:id", orderController.deleteOrder);
 
 // ********************************************************************************************************
-//                                      Order Entry Management Routes (Updated)
+//                                      Order Entry Management Routes
 // ********************************************************************************************************
-
-// Create a new OrderEntry
-router.post("/order-entries", orderEntryController.createOrderEntry);
-
-// Get all active OrderEntries
+router.post("/order-entries", orderEntryController.createOrderEntry); 
 router.get("/order-entries", orderEntryController.getAllOrderEntries);
+router.get("/order-entries/:id", orderEntryController.getOrderEntryById); 
+router.put("/order-entries/:id", orderEntryController.updateOrderEntry); 
+router.delete("/order-entries/:id", orderEntryController.deleteOrderEntry); 
 
-// // Get all deleted OrderEntries
-// router.get("/order-entries/deleted", orderEntryController.getAllDeletedOrderEntries);
-
-// // Get all completed OrderEntries
-// router.get("/order-entries/completed", orderEntryController.getAllCompletedOrderEntries);
-
-// Get a specific OrderEntry by ID
-router.get("/order-entries/:id", orderEntryController.getOrderEntryById);
-
-// Update an OrderEntry
-router.put("/order-entries/:id", orderEntryController.updateOrderEntry);
-
-// Soft delete an OrderEntry
-router.delete("/order-entries/:id", orderEntryController.softDeleteOrderEntry);
+// ********************************************************************************************************
+//                                      Order Summary Management Routes
+// ********************************************************************************************************
+router.get("/order-summaries", orderSummaryController.getAllOrderSummaries);
+router.get("/order-summaries/:orderNumber", orderSummaryController.getOrderSummaryByOrderNumber);
+// router.get("/order-summaries/:orderNumber/status", orderSummaryController.getOrderSummariesByOrderNumberAndStatus);
+// router.get("/order-summaries/date-range", orderSummaryController.getOrderSummariesByDateRange);
+router.get("/order-summaries/:orderNumber/order-status", orderSummaryController.getOrderStatusByOrderNumber);
 
 module.exports = router;

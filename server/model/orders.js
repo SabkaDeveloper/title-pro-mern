@@ -1,73 +1,88 @@
-const express = require("express");
-const router = express.Router();
-const { 
-  login, 
-  validateLogin, 
-  changePassword, 
-  validateChangePassword, 
-  signup, 
-  validateSignup 
-} = require("../controller/Auth");
-const { auth } = require("../middleware/auth");
-const contactController = require("../controller/contact");
-const contactTypeController = require("../controller/contactType");
-const orderEntryController = require("../controller/orderEntry");
-const orderController = require("../controller/order");
+const pool = require("../config/database");
 
-// ********************************************************************************************************
-//                                      Authentication Routes
-// ********************************************************************************************************
+// Function to create the Orders table
+const createOrdersTable = async () => {
+    const query = `
+      CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        customer VARCHAR(255) NOT NULL,
+        state VARCHAR(50) NOT NULL,
+        county VARCHAR(50) NOT NULL,
+        product_type VARCHAR(100) NOT NULL,
+        transaction_type VARCHAR(100) NOT NULL,
+        data_source VARCHAR(100),
+        workflow_group VARCHAR(100) NOT NULL,
+        status VARCHAR(50) DEFAULT 'pending', -- Ensure this exists for completed orders
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        deleted_at TIMESTAMP NULL
+      );
+    `;
+    await pool.query(query);
+    console.log("✅ Orders table created successfully");
+};
 
-// Signup route
-router.post("/signup", validateSignup, signup);
+createOrdersTable();
 
-// Login route
-router.post("/login", validateLogin, login);
+const Order = {
+  // Create a new order
+  create: async ({ customer, state, county, product_type, transaction_type, data_source, workflow_group }) => {
+    const query = `
+      INSERT INTO orders (customer, state, county, product_type, transaction_type, data_source, workflow_group)
+      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+    `;
+    const values = [customer, state, county, product_type, transaction_type, data_source, workflow_group];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  },
 
-// Change Password route (protected)
-router.post("/change-password", auth, validateChangePassword, changePassword);
+  // Get all active orders
+  findAll: async () => {
+    const query = `SELECT * FROM orders WHERE deleted_at IS NULL;`;
+    const result = await pool.query(query);
+    return result.rows;
+  },
 
-// ********************************************************************************************************
-//                                      Contact Management Routes
-// ********************************************************************************************************
+  // Get all deleted (soft deleted) orders
+  findAllDeleted: async () => {
+    const query = `SELECT * FROM orders WHERE deleted_at IS NOT NULL;`;
+    const result = await pool.query(query);
+    return result.rows;
+  },
 
-router.post("/contacts", contactController.createContact);
-router.get("/contacts", contactController.getAllContacts);
-router.get("/contacts/:id", contactController.getContactById);
-router.put("/contacts/:id", contactController.updateContact);
-router.delete("/contacts/:id", contactController.deleteContact);
-router.get("/contacts/deleted", contactController.getDeletedContacts);
+  // Get all completed orders
+  findAllCompleted: async () => {
+    const query = `SELECT * FROM orders WHERE status = 'completed' AND deleted_at IS NULL;`;
+    const result = await pool.query(query);
+    return result.rows;
+  },
 
-// ********************************************************************************************************
-//                                      Contact Type Management Routes
-// ********************************************************************************************************
+  // Get a single order by ID
+  findById: async (id) => {
+    const query = `SELECT * FROM orders WHERE id = $1 AND deleted_at IS NULL;`;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  },
 
-router.post("/contact-types", contactTypeController.createContactType);
-router.get("/contact-types", contactTypeController.getAllContactTypes);
-router.get("/contact-types/:id", contactTypeController.getContactTypeById);
-router.delete("/contact-types/:id", contactTypeController.deleteContactType);
-router.get("/contact-types/deleted", contactTypeController.getDeletedContactTypes);
+  // Update an order
+  update: async (id, { customer, state, county, product_type, transaction_type, data_source, workflow_group }) => {
+    const query = `
+      UPDATE orders 
+      SET customer = $1, state = $2, county = $3, product_type = $4, transaction_type = $5, 
+          data_source = $6, workflow_group = $7, updated_at = NOW()
+      WHERE id = $8 AND deleted_at IS NULL RETURNING *;
+    `;
+    const values = [customer, state, county, product_type, transaction_type, data_source, workflow_group, id];
+    const result = await pool.query(query, values);
+    return result.rows[0];
+  },
 
-// ********************************************************************************************************
-//                                      Order Entry Management Routes
-// ********************************************************************************************************
+  // Soft delete an order
+  softDelete: async (id) => {
+    const query = `UPDATE orders SET deleted_at = NOW() WHERE id = $1 RETURNING *;`;
+    const result = await pool.query(query, [id]);
+    return result.rows[0];
+  },
+};
 
-router.post("/order-entries", orderEntryController.createOrderEntry);
-router.get("/order-entries", orderEntryController.getAllOrderEntries);
-router.get("/order-entries/:id", orderEntryController.getOrderEntryById);
-router.put("/order-entries/:id", orderEntryController.updateOrderEntry);
-router.delete("/order-entries/:id", orderEntryController.softDeleteOrderEntry);
-
-// ********************************************************************************************************
-//                                      Order Management Routes
-// ********************************************************************************************************
-
-router.post("/orders", orderController.createOrder);
-router.get("/orders", orderController.getAllOrders);
-router.get("/orders/deleted", orderController.getAllDeletedOrders);
-router.get("/orders/completed", orderController.getAllCompletedOrders);
-router.get("/orders/:id", orderController.getOrderById);
-router.put("/orders/:id", orderController.updateOrder);
-router.delete("/orders/:id", orderController.softDeleteOrder);
-
-module.exports = router;
+module.exports = Order;
