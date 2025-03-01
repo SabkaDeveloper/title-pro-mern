@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Table, Pagination, Form, Button, InputGroup } from "react-bootstrap";
 import { FaSearch, FaPlus, FaFilter, FaDownload, FaClipboardList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; 
+import CreateOrder from "./CreateOrder";
 
 const ContactList = () => {
   const navigate = useNavigate(); 
@@ -63,9 +64,7 @@ const ContactList = () => {
           <InputGroup.Text><FaSearch /></InputGroup.Text>
         </InputGroup>
         <div className="d-flex flex-wrap gap-2 justify-content-center">
-          <Button variant="primary" className="d-flex align-items-center">
-            <FaClipboardList className="me-2" /> Create Order
-          </Button>
+            <CreateOrder/>
           <Button variant="primary"><FaPlus /></Button>
           <Button variant="primary"><FaFilter /></Button>
           <Button variant="primary"><FaDownload /></Button>

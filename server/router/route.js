@@ -26,13 +26,15 @@ router.post("/contacts", contactController.createContact);
 router.get("/contacts", contactController.getAllContacts);
 
 // Get a specific contact by ID
-router.get("/contacts/:id", contactController.getContactById);
+// router.get("/contacts/:id", contactController.getContactById);
+
+router.get("/contacts/:name", contactController.getContactByName);
 
 // Update a contact
-router.put("/contacts/:id", contactController.updateContact);
+router.put("/contacts/:email", contactController.updateContact);
 
 // Soft delete a contact
-router.delete("/contacts/:id", contactController.deleteContact);
+router.delete("/contacts/:name", contactController.deleteContact);
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes

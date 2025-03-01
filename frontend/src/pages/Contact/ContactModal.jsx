@@ -6,7 +6,8 @@ import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 
 // Function for sending POST request to create contact
-const createContact = async (contactData) => {
+
+const createContact = async (contactData, onContactAdded) => {
   try {
     const response = await fetch('http://localhost:4000/api/v1/contacts', {
       method: 'POST',
@@ -19,10 +20,9 @@ const createContact = async (contactData) => {
     const data = await response.json();
     if (response.ok) {
         toast.success(" Contact added successfully!", { autoClose: 1500 });
-        setTimeout(() => {
-            window.location.reload();
-          }, 1600);
-        return true;
+        if (onContactAdded) { // Ensure the function exists before calling
+          onContactAdded(data.data);
+        }        return true;
       } else {
         toast.error(` Error: ${data.message}`, { autoClose: 3000 });
         return false;
@@ -36,8 +36,8 @@ const createContact = async (contactData) => {
     }
   };
 
-function ContactModal() {
-  const [modalShow, setModalShow] = useState(false);
+  const ContactModal = ({ onContactAdded }) => {
+    const [modalShow, setModalShow] = useState(false);
   
   // Initialize react-hook-form
   const { handleSubmit, control, reset, watch, setValue } = useForm({
@@ -57,7 +57,7 @@ function ContactModal() {
 
   // Handle form submission
   const onSubmit = (data) => {
-    createContact(data); // Call the API with form data
+    createContact(data,onContactAdded); // Call the API with form data
     setModalShow(false); // Close modal after submission
     reset(); // Optionally reset form fields after submission
   };
@@ -67,7 +67,7 @@ function ContactModal() {
       <Modal
         show={show}
         onHide={onHide}
-        size="lg"
+        size="sm"
         aria-labelledby="contained-modal-title-vcenter"
         centered
       >

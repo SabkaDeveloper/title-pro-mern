@@ -11,6 +11,7 @@ import Orders from "./pages/order/Orders";
 import ContactList from "./pages/Contact/ContactList";
 import AdminDashboard from "./pages/admin/Admin";
 import DeleteContact from "./pages/Contact/DeleteContact";
+import ContactTypeList from "./pages/admin/ContactTypeTable";
 
 const Layout = ({ children }) => {
   const location = useLocation();
@@ -35,6 +36,7 @@ const App = () => {
           <Route path="/contacts" element={<ContactList />} />
           <Route path="/deleted-contacts" element={<DeleteContact />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/contact-type" element={<ContactTypeList />} />
         </Routes>
       </Layout>
 

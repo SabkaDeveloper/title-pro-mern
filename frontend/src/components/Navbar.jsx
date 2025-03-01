@@ -125,6 +125,7 @@ const Navbar = () => {
         location.pathname !=="/orders" && 
         location.pathname !=="/contacts" && 
         location.pathname !=="/deleted-contacts" && 
+        location.pathname !=="/contact-type" && 
       <Sidebar order={order} isAdmin={location.pathname === "/admin"}/>
 }
 

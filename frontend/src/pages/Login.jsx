@@ -3,33 +3,68 @@ import { Form, Button, Card, InputGroup } from "react-bootstrap";
 import { Eye, EyeSlash } from "react-bootstrap-icons";
 import backgroundImage from "../assets/Background.png";
 import { useNavigate } from "react-router-dom";
-import validator from "validator"; 
+import validator from "validator";
+import axios from "axios";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
+  const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const [apiError, setApiError] = useState(""); // To show API error if login fails
+  const [loading, setLoading] = useState(false); // To show loading state when calling API
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const newErrors = {
-      email: validator.isEmail(email) ? "" : "Invalid email format",
+      email: validator.isEmail(emailOrPhone) ? "" : "Invalid email format",
       password: validator.isLength(password, { min: 6 })
         ? ""
         : "Password must be at least 6 characters",
     };
-
+  
     setErrors(newErrors);
-
-    if (!newErrors.email && !newErrors.password) {
-      console.log("Logging in...");
-      navigate("/")
+  
+    if (newErrors.email || newErrors.password) {
+      return; // Don't proceed if there are validation errors
+    }
+  
+    setLoading(true);
+    setApiError(""); // Clear any previous errors
+  
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/Login",
+        {
+          emailOrPhone,
+          password,
+        }
+      );
+  
+      // Log the full response
+      console.log("Full API Response:", response);
+  
+      // Log only the data part if preferred
+      console.log("API Response Data:", response.data);
+  
+      const { token, user } = response.data;
+  
+      // Store token and user in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+  
+      // Redirect after successful login
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed", error.response?.data?.message || error.message);
+      setApiError(error.response?.data?.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   return (
     <div
       className="d-flex justify-content-center align-items-center"
@@ -50,7 +85,7 @@ const Login = () => {
       <Card
         style={{
           width: "500px",
-          height: "350px",
+          height: "380px",
           padding: "20px",
           borderRadius: "10px",
           boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
@@ -62,15 +97,21 @@ const Login = () => {
             <span style={{ color: "#007bff" }}>Title</span>Pro
           </h3>
 
+          {apiError && (
+            <div className="alert alert-danger text-center">{apiError}</div>
+          )}
+
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Control
                 type="email"
                 placeholder="Enter email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
               />
-              {errors.email && <div className="text-danger small">{errors.email}</div>}
+              {errors.email && (
+                <div className="text-danger small">{errors.email}</div>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -95,7 +136,9 @@ const Login = () => {
                   {showPassword ? <EyeSlash /> : <Eye />}
                 </span>
               </InputGroup>
-              {errors.password && <div className="text-danger small">{errors.password}</div>}
+              {errors.password && (
+                <div className="text-danger small">{errors.password}</div>
+              )}
             </Form.Group>
 
             <div className="text-end mb-3">
@@ -108,8 +151,13 @@ const Login = () => {
               </span>
             </div>
 
-            <Button className="w-100" variant="primary" type="submit">
-              Login
+            <Button
+              className="w-100"
+              variant="primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
             </Button>
           </Form>
         </Card.Body>

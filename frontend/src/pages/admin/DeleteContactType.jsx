@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MdDeleteForever } from "react-icons/md";
 
-const FilterBtn = ({ onDeleteSuccess }) => {
+const DeleteContactType = ({ onDeleteSuccess }) => {
   return (
     <div className="d-flex justify-content-center align-items-center">
       <FlyoutLink onDeleteSuccess={onDeleteSuccess}>
@@ -26,14 +26,14 @@ const FlyoutLink = ({ children, onDeleteSuccess }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/v1/contacts/${inputValue}`, {
+      const response = await fetch(`http://localhost:4000/api/v1/contact-type/${inputValue}`, {
         method: "DELETE",
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(`Contact ${inputValue} deleted successfully!`, { position: "top-right" });
+        toast.success(`Contact Type ${inputValue} deleted successfully!`, { position: "top-right" });
 
         // Call onDeleteSuccess to update the UI dynamically
         if (typeof onDeleteSuccess === "function") {
@@ -80,7 +80,7 @@ const FlyoutContent = ({ inputValue, setInputValue, handleDelete }) => {
       <InputGroup className="mb-2">
         <Form.Control
           type="text"
-          placeholder="Enter Contact Name"
+          placeholder="Enter Contact Type ID"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
         />
@@ -92,4 +92,4 @@ const FlyoutContent = ({ inputValue, setInputValue, handleDelete }) => {
   );
 };
 
-export default FilterBtn;
+export default DeleteContactType;
