@@ -26,7 +26,7 @@ const FlyoutLink = ({ children, onDeleteSuccess }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/v1/contact-type/${inputValue}`, {
+      const response = await fetch(`http://localhost:4000/api/v1/contact-types/${inputValue}`, {
         method: "DELETE",
       });
 

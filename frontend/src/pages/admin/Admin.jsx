@@ -6,7 +6,6 @@ import { RiListUnordered } from "react-icons/ri";
 import { TiFlowChildren } from "react-icons/ti";
 import { TbSettingsDollar } from "react-icons/tb";
 import { LiaLayerGroupSolid } from "react-icons/lia";
-import ContactTypeModel from "./Contact-TypeModel";
 import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {

@@ -78,8 +78,8 @@ const createContact = async (contactData, onContactAdded) => {
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Group controlId="formName">
-              <Form.Label>Name</Form.Label>
+            <Form.Group controlId="formName" >
+              <Form.Label className='mb-0'>Name</Form.Label>
               <Controller
                 name="name"
                 control={control}
@@ -94,8 +94,8 @@ const createContact = async (contactData, onContactAdded) => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formPhone">
-              <Form.Label>Phone</Form.Label>
+            <Form.Group controlId="formPhone" className='mt-2'>
+              <Form.Label className='mb-0'>Phone</Form.Label>
               <Controller
                 name="phone"
                 control={control}
@@ -110,8 +110,8 @@ const createContact = async (contactData, onContactAdded) => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formEmail">
-              <Form.Label>Email</Form.Label>
+            <Form.Group controlId="formEmail" className='mt-2'>
+              <Form.Label className='mb-0'>Email</Form.Label>
               <Controller
                 name="email"
                 control={control}
@@ -126,8 +126,8 @@ const createContact = async (contactData, onContactAdded) => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formType">
-              <Form.Label>Type</Form.Label>
+            <Form.Group controlId="formType" className='mt-2'>
+              <Form.Label className='mb-0'>Type</Form.Label>
               <Controller
                 name="type"
                 control={control}
@@ -140,8 +140,8 @@ const createContact = async (contactData, onContactAdded) => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formAddress">
-              <Form.Label>Address</Form.Label>
+            <Form.Group controlId="formAddress" className='mt-2'>
+              <Form.Label className='mb-0'>Address</Form.Label>
               <Controller
                 name="address"
                 control={control}
@@ -158,8 +158,8 @@ const createContact = async (contactData, onContactAdded) => {
 
             <Row>
               <Col md={6}>
-                <Form.Group controlId="formCity">
-                  <Form.Label>City</Form.Label>
+                <Form.Group controlId="formCity" className='mt-2'>
+                  <Form.Label className='mb-0'>City</Form.Label>
                   <Controller
                     name="county"
                     control={control}
@@ -176,8 +176,8 @@ const createContact = async (contactData, onContactAdded) => {
               </Col>
 
               <Col md={6}>
-                <Form.Group controlId="formCounty">
-                  <Form.Label>County</Form.Label>
+                <Form.Group controlId="formCounty" className='mt-2'>
+                  <Form.Label className='mb-0'>County</Form.Label>
                   <Controller
                     name="city"
                     control={control}
@@ -194,8 +194,8 @@ const createContact = async (contactData, onContactAdded) => {
               </Col>
             </Row>
 
-            <Form.Group controlId="formStatus">
-              <Form.Label>Status</Form.Label>
+            <Form.Group controlId="formStatus" className='mt-2'>
+              <Form.Label className='mb-0'>Status</Form.Label>
               <Controller
                 name="status"
                 control={control}

@@ -74,19 +74,20 @@ const ContactList = () => {
       <div className="table-responsive w-100">
         <Table striped bordered hover className="small w-100">
           <thead>
-            <tr>
-              <th>Arrival Date</th>
-              <th>Delivery Date</th>
-              <th>Order Number</th>
-              <th>Customer</th>
-              <th>Priority</th>
-              <th>Transaction Type</th>
-              <th>Data Source</th>
-              <th>State</th>
-              <th>County</th>
-              <th>Active Workflow</th>
-              <th>Assigned To</th>
-            </tr>
+                <tr>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Arrival Date</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Delivery Date</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Order Number</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Customer</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Priority</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Transaction Type</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Data Source</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>State</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>County</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Active Workflow</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Assigned To</th>
+      </tr>
+
           </thead>
           <tbody>
             {displayedContacts.map((contact, index) => (

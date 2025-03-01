@@ -13,15 +13,15 @@ const ContactTypeList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const contactsPerPage = 10;
-  
+
   const { reset } = useForm({
     defaultValues: {
       name: "",
       slug: "",
-      user_id: ""
-    }
+      user_id: "",
+    },
   });
-  
+
   // Fetch all contacts
   const fetchAllContacts = async () => {
     try {
@@ -39,8 +39,8 @@ const ContactTypeList = () => {
     }
   };
 
-  const handleDeleteSuccess = (deletedContact) => {
-    setContacts((prevContacts) => prevContacts.filter((contact) => contact.name !== deletedContact));
+  const handleDeleteSuccess = (deletedContactId) => {
+    setContacts((prevContacts) => prevContacts.filter((contact) => contact.id !== deletedContactId));
   };
 
   // Fetch contacts by search term
@@ -94,26 +94,13 @@ const ContactTypeList = () => {
 
       {/* Search & Filters */}
       <Row className="align-items-center my-3 g-2">
-        <Col xs={12} sm={6} md={3}>
-          <Form.Control type="text" placeholder="Contact Name" />
-        </Col>
-
-        <Col xs={12} sm={6} md={5}>
-          <div className="input-group">
-            <Form.Control
-              type="text"
-              placeholder="Search Contact Types..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button variant="outline-secondary" onClick={handleSearch}>
-              <FaSearch />
-            </Button>
-          </div>
-        </Col>
-
+       
         <Col xs={6} sm={3} md="auto">
-          <ContactTypeModel isOpen={isModalOpen} setIsOpen={setIsModalOpen} onContactAdded={newContact => setContacts(prev => [...prev, newContact])} />
+          <ContactTypeModel
+            isOpen={isModalOpen}
+            setIsOpen={setIsModalOpen}
+            onContactAdded={(newContact) => setContacts((prev) => [...prev, newContact])}
+          />
         </Col>
 
         <Col xs={6} sm={3} md="auto">
@@ -125,11 +112,12 @@ const ContactTypeList = () => {
       <div className="table-responsive">
         <Table striped bordered hover className="small w-200">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Slug</th>
-              <th>User_ID</th>
-            </tr>
+          <tr>
+          <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Name</th>
+          <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Slug</th>
+          <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>User_ID</th>
+          </tr>
+
           </thead>
           <tbody>
             {displayedContacts.map((contact, index) => (

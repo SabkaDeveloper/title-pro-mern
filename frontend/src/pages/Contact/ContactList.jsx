@@ -175,16 +175,16 @@ const ContactList = () => {
       <div className="table-responsive">
         <Table striped bordered hover className="small w-200">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Address</th>
-              <th>Phone Number</th>
-              <th>Email Address</th>
-              <th>Invoice Terms</th>
-              <th>Created By</th>
-              <th>Created On</th>
-            </tr>
+                <tr>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Name</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Type</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Address</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Phone Number</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Email Address</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Invoice Terms</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Created By</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Created On</th>
+      </tr>
           </thead>
           <tbody>
             {displayedContacts.map((contact, index) => (
