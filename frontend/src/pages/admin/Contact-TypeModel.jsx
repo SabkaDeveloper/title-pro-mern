@@ -5,7 +5,7 @@ import { MdAddCircleOutline } from "react-icons/md";
 import { toast } from "react-toastify";
 
 const ContactTypeModel = ({ isOpen, setIsOpen, onContactAdded }) => {
-  const { control, handleSubmit, reset } = useForm({
+  const { control, handleSubmit, reset } = useForm ({
     defaultValues: {
       contact_type: "",
     },
