@@ -38,12 +38,12 @@ router.delete("/contacts/:name", contactController.deleteContact);
 // ********************************************************************************************************
 // Admin-only routes (Create, Delete, Restore)
 router.post("/contact-types", auth, adminAuth, contactTypeController.createContactType);
-router.delete("/contact-types/:id", auth, adminAuth, contactTypeController.deleteContactType);
-router.put("/contact-types/:id/restore", auth, adminAuth, contactTypeController.restoreContactType);
+router.delete("/contact-types/:contact_type", auth, adminAuth, contactTypeController.deleteContactType);
+router.put("/contact-types/:contact_type/restore", auth, adminAuth, contactTypeController.restoreContactType);
 
 // Public routes (Anyone can access)
 router.get("/contact-types", contactTypeController.getAllContactTypes);
-router.get("/contact-types/:id", contactTypeController.getContactTypeById);
+router.get("/contact-types/:contact_type", contactTypeController.getContactTypeByName);
 
 // ********************************************************************************************************
 //                                      Order Management Routes

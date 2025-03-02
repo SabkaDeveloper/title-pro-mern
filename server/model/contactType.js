@@ -6,10 +6,8 @@ const ContactType = {
   create: async ({ contact_type }) => {
     try {
       const slug = slugify(contact_type, { lower: true, strict: true });
-
-    
+      
       const adminQuery = `SELECT id FROM users WHERE LOWER(role) = 'admin' ORDER BY id ASC LIMIT 1;`;
-
       const adminResult = await pool.query(adminQuery);
 
       if (adminResult.rows.length === 0) {
@@ -18,16 +16,14 @@ const ContactType = {
 
       const user_id = adminResult.rows[0].id; 
 
-      // Insert new contact type
       const query = `
         INSERT INTO contact_type (contact_type, slug, user_id)
         VALUES ($1, $2, $3) 
-        RETURNING id, contact_type, slug, user_id;
+        RETURNING contact_type, slug, user_id;
       `;
 
       const result = await pool.query(query, [contact_type, slug, user_id]);
       return result.rows[0]; 
-
     } catch (error) {
       console.error("Error creating contact type:", error.message);
       throw error;
@@ -37,7 +33,7 @@ const ContactType = {
   // Fetch all contact types
   findAll: async () => {
     try {
-      const query = `SELECT * FROM contact_type;`;
+      const query = `SELECT * FROM contact_type WHERE deleted_at IS NULL;`;
       const result = await pool.query(query);
       return result.rows;
     } catch (error) {
@@ -46,26 +42,48 @@ const ContactType = {
     }
   },
 
-  // Get a single contact type by ID
-  findById: async (id) => {
+  // Get a single contact type by name
+  findByName: async (contact_type) => {
     try {
-      const query = `SELECT * FROM contact_type WHERE id = $1;`;
-      const result = await pool.query(query, [id]);
+      const query = `SELECT * FROM contact_type WHERE contact_type = $1 AND deleted_at IS NULL;`;
+      const result = await pool.query(query, [contact_type]);
       return result.rows[0];
     } catch (error) {
-      console.error("Error fetching contact type by ID:", error.message);
+      console.error("Error fetching contact type by name:", error.message);
       throw error;
     }
   },
 
-  // Delete a contact type by ID
-  delete: async (id) => {
+  // Soft delete a contact type
+  softDelete: async (contact_type) => {
     try {
-      const query = `DELETE FROM contact_type WHERE id = $1 RETURNING *;`;
-      const result = await pool.query(query, [id]);
+      const query = `
+        UPDATE contact_type 
+        SET deleted_at = NOW()
+        WHERE contact_type = $1 AND deleted_at IS NULL 
+        RETURNING *;
+      `;
+      const result = await pool.query(query, [contact_type]);
       return result.rows[0];
     } catch (error) {
-      console.error("Error deleting contact type:", error.message);
+      console.error("Error soft deleting contact type:", error.message);
+      throw error;
+    }
+  },
+
+  // Restore a soft deleted contact type
+  restore: async (contact_type) => {
+    try {
+      const query = `
+        UPDATE contact_type 
+        SET deleted_at = NULL
+        WHERE contact_type = $1 
+        RETURNING *;
+      `;
+      const result = await pool.query(query, [contact_type]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error restoring contact type:", error.message);
       throw error;
     }
   }
