@@ -65,16 +65,31 @@ getAllDeletedContacts: async (req, res) => {
     }
   },
 
-  // Update a contact by ID
+  // Get contact by name
+  getContactByName: async (req, res) => {
+    try {
+      const { name } = req.params;
+      const contact = await Contact.findByName(name);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+
+      res.status(200).json({ contact });
+    } catch (error) {
+      console.error("Error fetching contact:", error.message);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  },
+
+  // Update contact by name
   updateContact: async (req, res) => {
     try {
-      const { id } = req.params;
-      const {
-        name, phone, email, type, address, city, county, status
-      } = req.body;
+      const { name } = req.params;
+      const { phone, email, type, address, city, county, status } = req.body;
 
-      const updatedContact = await Contact.update(id, {
-        name, phone, email, type, address, city, county, status
+      const updatedContact = await Contact.updateByName(name, {
+        phone, email, type, address, city, county, status
       });
 
       if (!updatedContact) {
@@ -88,29 +103,22 @@ getAllDeletedContacts: async (req, res) => {
     }
   },
 
-
-// Soft delete a contact by ID
-deleteContact: async (req, res) => {
-  try {
-      const { id } = req.params;
-
-      
-      if (isNaN(Number(id))) {
-          return res.status(400).json({ message: "Invalid contact ID. It must be an integer." });
-      }
-
-      const deletedContact = await Contact.softDelete(id);
+  // Delete contact by name
+  deleteContact: async (req, res) => {
+    try {
+      const { name } = req.params;
+      const deletedContact = await Contact.softDeleteByName(name);
 
       if (!deletedContact) {
-          return res.status(404).json({ message: "Contact not found or already deleted" });
+        return res.status(404).json({ message: "Contact not found or already deleted" });
       }
 
-      res.status(200).json({ message: "Contact soft-deleted successfully", contact: deletedContact });
-  } catch (error) {
-      console.error("Error soft-deleting contact:", error.message);
+      res.status(200).json({ message: "Contact deleted successfully", contact: deletedContact });
+    } catch (error) {
+      console.error("Error deleting contact:", error.message);
       res.status(500).json({ message: "Internal server error", error: error.message });
+    }
   }
-},
 };
 
 module.exports = contactController;
