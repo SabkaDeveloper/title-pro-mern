@@ -51,29 +51,43 @@ const Contact = {
     return result.rows;
   },
 
-  // Get a single contact by ID
+  // Get a single contact by ID (with validation)
   findById: async (id) => {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new Error("Invalid contact ID. It must be an integer.");
+    }
+
     const query = `SELECT * FROM contacts WHERE id = $1 AND deleted_at IS NULL;`;
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [parsedId]);
     return result.rows[0];
   },
 
   // Update contact details
   update: async (id, { name, phone, email, type, address, city, county, status }) => {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new Error("Invalid contact ID. It must be an integer.");
+    }
+
     const query = `
       UPDATE contacts 
       SET name = $1, phone = $2, email = $3, type = $4, address = $5, city = $6, county = $7, status = $8, updated_at = NOW()
       WHERE id = $9 AND deleted_at IS NULL RETURNING *;
     `;
-    const values = [name, phone, email, type, address, city, county, status, id];
+    const values = [name, phone, email, type, address, city, county, status, parsedId];
     const result = await pool.query(query, values);
     return result.rows[0];
   },
 
   // Soft delete a contact
   softDelete: async (id) => {
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId)) {
+      throw new Error("Invalid contact ID. It must be an integer.");
+    }
     const query = `UPDATE contacts SET deleted_at = NOW() WHERE id = $1 RETURNING *;`;
-    const result = await pool.query(query, [id]);
+    const result = await pool.query(query, [parsedId]);
     return result.rows[0];
   },
 };

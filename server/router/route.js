@@ -27,11 +27,11 @@ router.post("/change-password", auth, validateChangePassword, changePassword);
 //                                      Contact Management Routes
 // ********************************************************************************************************
 router.post("/contacts", contactController.createContact);
+router.get("/contacts/deleted", contactController.getAllDeletedContacts);
 router.get("/contacts", contactController.getAllContacts);
 router.get("/contacts/:id", contactController.getContactById);
 router.put("/contacts/:id", contactController.updateContact);
 router.delete("/contacts/:id", contactController.deleteContact);
-router.get("/contacts/deleted", contactController.getDeletedContacts);
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
