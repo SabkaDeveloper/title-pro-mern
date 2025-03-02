@@ -122,7 +122,7 @@ const ContactTypeList = () => {
           <tbody>
             {displayedContacts.map((contact, index) => (
               <tr key={index}>
-                <td>{contact.name}</td>
+                <td>{contact.contact_type}</td>
                 <td>{contact.slug}</td>
                 <td>{contact.user_id}</td>
               </tr>

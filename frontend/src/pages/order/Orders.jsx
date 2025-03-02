@@ -1,44 +1,43 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination, Form, Button, InputGroup } from "react-bootstrap";
 import { FaSearch, FaPlus, FaFilter, FaDownload, FaClipboardList } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; 
 import CreateOrder from "./CreateOrder";
+import axios from "axios"; // Import Axios for API requests
 
 const ContactList = () => {
   const navigate = useNavigate(); 
   const [activePage, setActivePage] = useState(1);
-  const contactsPerPage = 12; 
+  const [orders, setOrders] = useState([]); // State to hold the fetched orders
+  const contactsPerPage = 12;
 
-  const contacts = [
-    { 
-      arrival_date: "Jul 12, 2024 09:01 AM", 
-      delivery_date: "", 
-      order_number: "2024-0181563-NE", 
-      customer: "[REDACTED]", 
-      priority: "N", 
-      transaction_type: "Full", 
-      data_source: "Online", 
-      state: "NE", 
-      county: "Cass", 
-      active_workflow: "Abstract Processing", 
-      assigned_to: "" 
-    },
-    { 
-      arrival_date: "Jul 17, 2024 10:46 AM", 
-      delivery_date: "", 
-      order_number: "2024-0181827-NC", 
-      customer: "[REDACTED]", 
-      priority: "N", 
-      transaction_type: "Document Retrieval", 
-      data_source: "Ground", 
-      state: "NC", 
-      county: "Gaston", 
-      active_workflow: "Document Review", 
-      assigned_to: "" 
-    },
-  ];
+  // Fetch orders from the API when the component mounts
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get('http://localhost:4000/api/v1/orders');
+      if (response.data && response.data.data) {
+        setOrders(response.data.data); // Update the state with fetched orders
+      } else {
+        console.error("No orders found in the response.");
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+    }
+  };
 
-  const totalPages = Math.ceil(contacts.length / contactsPerPage);
+  useEffect(() => {
+    fetchOrders(); // Fetch orders when the component mounts
+
+    // Set up polling to fetch new orders every 10 seconds
+    const intervalId = setInterval(() => {
+      fetchOrders();
+    }, 10000); // Poll every 10 seconds
+
+    // Clean up the interval when the component is unmounted
+    return () => clearInterval(intervalId);
+  }, []); // Empty dependency array ensures this effect runs only once
+
+  const totalPages = Math.ceil(orders.length / contactsPerPage);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -52,7 +51,7 @@ const ContactList = () => {
 
   const startIndex = (activePage - 1) * contactsPerPage;
   const endIndex = startIndex + contactsPerPage;
-  const displayedContacts = contacts.slice(startIndex, endIndex);
+  const displayedOrders = orders.slice(startIndex, endIndex);
 
   return (
     <div className="container-fluid p-0">
@@ -64,7 +63,7 @@ const ContactList = () => {
           <InputGroup.Text><FaSearch /></InputGroup.Text>
         </InputGroup>
         <div className="d-flex flex-wrap gap-2 justify-content-center">
-            <CreateOrder/>
+          <CreateOrder setOrders={setOrders} />
           <Button variant="primary"><FaPlus /></Button>
           <Button variant="primary"><FaFilter /></Button>
           <Button variant="primary"><FaDownload /></Button>
@@ -74,35 +73,34 @@ const ContactList = () => {
       <div className="table-responsive w-100">
         <Table striped bordered hover className="small w-100">
           <thead>
-                <tr>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Arrival Date</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Delivery Date</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Order Number</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Customer</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Priority</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Transaction Type</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Data Source</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>State</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>County</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Active Workflow</th>
-        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Assigned To</th>
-      </tr>
-
+            <tr>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Arrival Date</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Delivery Date</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Order Number</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Customer</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Priority</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Transaction Type</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Data Source</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>State</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>County</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Active Workflow</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Assigned To</th>
+            </tr>
           </thead>
           <tbody>
-            {displayedContacts.map((contact, index) => (
+            {displayedOrders.map((order, index) => (
               <tr key={index}>
-                <td>{contact.arrival_date}</td>
-                <td>{contact.delivery_date}</td>
-                <td className="text-primary">{contact.order_number}</td>
-                <td>{contact.customer}</td>
-                <td>{contact.priority}</td>
-                <td>{contact.transaction_type}</td>
-                <td>{contact.data_source}</td>
-                <td>{contact.state}</td>
-                <td>{contact.county}</td>
-                <td>{contact.active_workflow}</td>
-                <td>{contact.assigned_to}</td>
+                <td>{order.created_at}</td>
+                <td></td>
+                <td className="text-primary">{order.id}</td>
+                <td>{order.customer}</td>
+                <td></td>
+                <td>{order.transaction_type}</td>
+                <td>{order.data_source}</td>
+                <td>{order.state}</td>
+                <td>{order.county}</td>
+                <td>{order.workflow_group}</td>
+                <td>{order.assigned_to}</td>
               </tr>
             ))}
           </tbody>

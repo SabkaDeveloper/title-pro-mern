@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Form, Button, Row, Col } from 'react-bootstrap';
 import { Controller, useForm } from 'react-hook-form';
 import { FaClipboardList } from 'react-icons/fa';
-import axios from 'axios';  // Import Axios
-import { toast } from 'react-toastify'; // Ensure react-toastify is installed for success/error messages
+import axios from 'axios';  
+import { toast } from 'react-toastify'; 
 
 const CreateOrder = () => {
   const [modalShow, setModalShow] = useState(false);
@@ -21,13 +21,17 @@ const CreateOrder = () => {
         data_source: data.dataSource,
         workflow_group: data.workflowGroup,
       });
-
-      if (response.status === 200) {
-        // If the response is successful, show success message
-        toast.success('Order created successfully!', { autoClose: 1500 });
+  
+      // Check if the response indicates success
+      if (response.data.success) {
+        // Order was successfully created, show success message
+        const orderData = response.data.data;
+  
+        toast.success(`Order created successfully! ID: ${orderData.id} - ${orderData.customer}`, { autoClose: 1500 });
         setModalShow(false); // Close modal after successful submission
-      } else {
-        // If the response is not OK, show error message
+
+          } else {
+        // Handle error case from API response
         toast.error(`Error: ${response.data.message}`, { autoClose: 3000 });
       }
     } catch (error) {
@@ -35,6 +39,7 @@ const CreateOrder = () => {
       toast.error('An error occurred while creating the order.', { autoClose: 3000 });
     }
   };
+  
 
   return (
     <>
