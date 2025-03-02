@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, Pagination, Container } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +7,22 @@ const DeleteContact = () => {
   const [activePage, setActivePage] = useState(1);
   const [contacts, setContacts] = useState([]);
   const contactsPerPage = 10;
+
+  useEffect(() => {
+    const fetchDeletedContacts = async () => {
+      try {
+        const response = await fetch("http://localhost:4000/api/v1/contacts/deleted");
+        const data = await response.json();
+        setContacts(Array.isArray(data.contacts) ? data.contacts : []); // Ensure it's an array
+      } catch (error) {
+        console.error("Error fetching deleted contacts:", error);
+        setContacts([]); // Set an empty array on error
+      }
+    };
+  
+    fetchDeletedContacts();
+  }, []);
+  
 
   const totalPages = Math.max(1, Math.ceil(contacts.length / contactsPerPage));
 
@@ -21,37 +37,36 @@ const DeleteContact = () => {
 
   return (
     <Container fluid>
-      <h3 className="mt-1">Contact List</h3>
+      <h3 className="mt-1">Deleted Contacts</h3>
 
       {/* Tabs */}
       <ul className="nav nav-tabs">
         <li className="nav-item">
-          <button className="nav-link active" onClick={() => navigate("/contacts")}>
+          <button className="nav-link text-muted" onClick={() => navigate("/contacts")}>
             Active
           </button>
         </li>
         <li className="nav-item">
-          <button className="nav-link text-muted" onClick={() => navigate("/deleted-contacts")}>
+          <button className="nav-link active" onClick={() => navigate("/deleted-contacts")}>
             Deleted
           </button>
         </li>
       </ul>
 
-
       {/* Contacts Table */}
       <div className="table-responsive mt-2">
         <Table striped bordered hover className="small w-200">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Address</th>
-              <th>Phone Number</th>
-              <th>Email Address</th>
-              <th>Invoice Terms</th>
-              <th>Created By</th>
-              <th>Created On</th>
-            </tr>
+          <tr>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Name</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Type</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Address</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Phone Number</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Email Address</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Invoice Terms</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Created By</th>
+        <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Created On</th>
+      </tr>
           </thead>
           <tbody>
             {displayedContacts.map((contact, index) => (
@@ -61,8 +76,8 @@ const DeleteContact = () => {
                 <td>{contact.address}</td>
                 <td>{contact.phone}</td>
                 <td>{contact.email}</td>
-                <td>Net 30</td>
-                <td>{contact.name}</td>
+                <td></td>
+                <td>{contact.created_by}</td>
                 <td>{contact.created_at}</td>
               </tr>
             ))}
