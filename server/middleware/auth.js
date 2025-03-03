@@ -1,60 +1,41 @@
-const jwt = require("jsonwebtoken");
+const passport = require("passport");
+const jwtStrategy = require("passport-jwt").Strategy;
+const { ExtractJwt } = require("passport-jwt");
 const dotenv = require("dotenv");
 const pool = require("../config/database");
-const { check } = require("express-validator");
 
 dotenv.config();
 
-// 🔹 Validation Middleware (Optional)
-exports.validateAuth = [
-  check("token").optional().isString().withMessage("Token must be a valid string"),
-];
+// 🔹 JWT Passport Strategy Setup
+passport.use(
+  new jwtStrategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), // Extract token from "Authorization" header
+    },
+    async (jwtPayload, done) => {
+      try {
+        const query = "SELECT id, name, email, role FROM users WHERE id = $1 LIMIT 1;";
+        const { rows } = await pool.query(query, [jwtPayload.id]);
 
-// 🔹 Authentication Middleware (Validates Token & Fetches User)
-exports.auth = async (req, res, next) => {
-  try {
-    const token = extractToken(req);
+        if (rows.length === 0) {
+          return done(null, false, { message: "User not found" });
+        }
 
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication token is required",
-      });
+        return done(null, rows[0]); // Attach user to request
+      } catch (error) {
+        console.error("Error in passport JWT strategy:", error.message);
+        return done(error, false);
+      }
     }
+  )
+);
 
-    // Verify and decode token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (error) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid or expired token",
-      });
-    }
+// 🔹 Middleware to Initialize Passport
+exports.initializePassport = passport.initialize();
 
-    // Fetch user details from database
-    const query = "SELECT id, name, email, role FROM users WHERE id = $1 LIMIT 1;";
-    const { rows } = await pool.query(query, [decoded.id]);
-
-    if (rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    req.user = rows[0]; // Attach user to request
-    next();
-
-  } catch (error) {
-    console.error("Auth Middleware Error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error during authentication",
-    });
-  }
-};
+// 🔹 Auth Middleware (Now Using Passport.js)
+exports.auth = passport.authenticate("jwt", { session: false });
 
 // 🔹 Role-based Authorization Middleware
 exports.authorizeRoles = (...allowedRoles) => {
@@ -87,9 +68,3 @@ exports.authorizeRoles = (...allowedRoles) => {
 
 // 🔹 Admin-only Access Middleware
 exports.adminAuth = exports.authorizeRoles("admin");
-
-// 🔹 Utility: Extract Token from Headers
-function extractToken(req) {
-  const authHeader = req.header("Authorization");
-  return authHeader && authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
-}
