@@ -2,28 +2,24 @@ const pool = require("../config/database");
 const slugify = require("slugify");
 
 const ContactType = {
-  // Create a new contact type with Admin user_id
-  create: async ({ contact_type }) => {
+  // Create a new contact type with Admin user_id from frontend token
+  create: async ({ contact_type }, user_id) => {
     try {
       const slug = slugify(contact_type, { lower: true, strict: true });
-      
-      const adminQuery = `SELECT id FROM users WHERE LOWER(role) = 'admin' ORDER BY id ASC LIMIT 1;`;
-      const adminResult = await pool.query(adminQuery);
 
-      if (adminResult.rows.length === 0) {
-        throw new Error("No Admin user found");
+      // Instead of fetching admin id from database, we use the user_id passed from the token
+      if (!user_id) {
+        throw new Error("User ID is required");
       }
-
-      const user_id = adminResult.rows[0].id; 
 
       const query = `
         INSERT INTO contact_type (contact_type, slug, user_id)
-        VALUES ($1, $2, $3) 
+        VALUES ($1, $2, $3)
         RETURNING contact_type, slug, user_id;
       `;
 
       const result = await pool.query(query, [contact_type, slug, user_id]);
-      return result.rows[0]; 
+      return result.rows[0];
     } catch (error) {
       console.error("Error creating contact type:", error.message);
       throw error;
@@ -42,14 +38,14 @@ const ContactType = {
     }
   },
 
-  // Get a single contact type by name
-  findByName: async (contact_type) => {
+  // Find contact type by ID 
+  findById: async (id) => {
     try {
-      const query = `SELECT * FROM contact_type WHERE contact_type = $1 AND deleted_at IS NULL;`;
-      const result = await pool.query(query, [contact_type]);
-      return result.rows[0];
+      const query = `SELECT * FROM contact_type WHERE id = $1 AND deleted_at IS NULL;`;
+      const result = await pool.query(query, [id]);
+      return result.rows[0]; // Return the first row as it's expected to be unique
     } catch (error) {
-      console.error("Error fetching contact type by name:", error.message);
+      console.error("Error fetching contact type by ID:", error.message);
       throw error;
     }
   },

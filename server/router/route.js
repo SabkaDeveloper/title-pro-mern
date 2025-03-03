@@ -46,10 +46,14 @@ router.delete("/contacts/:name",auth, contactController.deleteContact);
 
 // get all Contact Types
 router.get("/contact-types",auth, contactTypeController.getAllContactTypes);
+// create a contact Type
 router.post("/contact-types", auth, contactTypeController.createContactType);
+// soft delete a contact Type
 router.delete("/contact-types/:contact_type", auth, contactTypeController.deleteContactType);
-router.put("/contact-types/:contact_type/restore", auth, contactTypeController.restoreContactType);
-router.get("/contact-types/:contact_type",auth, contactTypeController.getContactTypeByName);
+// Update a contact Type
+router.patch("/contact-types/:contact_type", auth, contactTypeController.restoreContactType);
+// get a single contact Type
+router.get("/contact-types/:id",auth, contactTypeController.getContactTypeById);
 
 // ********************************************************************************************************
 //                                      Order Management Routes
