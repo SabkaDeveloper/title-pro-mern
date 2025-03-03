@@ -27,23 +27,34 @@ router.post("/change-password", auth, validateChangePassword, changePassword);
 //                                      Contact Management Routes
 // ********************************************************************************************************
 router.post("/contacts", contactController.createContact);
-router.get("/contacts/deleted", contactController.getAllDeletedContacts);
+
+// Get all contacts
 router.get("/contacts", contactController.getAllContacts);
+
+router.get("/contacts/deleted", contactController.getAllDeletedContacts);
+// Get a specific contact by ID
+// router.get("/contacts/:id", contactController.getContactById);
+
 router.get("/contacts/:name", contactController.getContactByName);
-router.put("/contacts/:name", contactController.updateContact);
+
+// Update a contact
+router.put("/contacts/:email", contactController.updateContact);
+
+// Soft delete a contact
 router.delete("/contacts/:name", contactController.deleteContact);
+
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
 // ********************************************************************************************************
 // Admin-only routes (Create, Delete, Restore)
 router.post("/contact-types", auth, adminAuth, contactTypeController.createContactType);
-router.delete("/contact-types/:id", auth, adminAuth, contactTypeController.deleteContactType);
-router.put("/contact-types/:id/restore", auth, adminAuth, contactTypeController.restoreContactType);
+router.delete("/contact-types/:contact_type", auth, adminAuth, contactTypeController.deleteContactType);
+router.put("/contact-types/:contact_type/restore", auth, adminAuth, contactTypeController.restoreContactType);
 
 // Public routes (Anyone can access)
 router.get("/contact-types", contactTypeController.getAllContactTypes);
-router.get("/contact-types/:id", contactTypeController.getContactTypeById);
+router.get("/contact-types/:contact_type", contactTypeController.getContactTypeByName);
 
 // ********************************************************************************************************
 //                                      Order Management Routes

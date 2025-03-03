@@ -1,41 +1,29 @@
-const Contact = require("../model/contact"); 
+const Contact = require("../model/contact");
 
-const contactController = {
-  // Create a new contact
-  createContact: async (req, res) => {
-    try {
-      const {
-        name, phone, email, type, address, city, county, status, user_id
-      } = req.body;
+// Create a new contact
+exports.createContact = async (req, res) => {
+  try {
+    const newContact = await Contact.create(req.body);
+    return res.status(201).json({ success: true, data: newContact });
+  } catch (error) {
+    console.error("Error creating contact:", error);
+    return res.status(500).json({ success: false, message: "Error creating contact" });
+  }
+};
 
-      if (!name || !phone || !email || !type || !user_id) {
-        return res.status(400).json({ message: "Required fields are missing." });
-      }
-
-      const newContact = await Contact.create({
-        name, phone, email, type, address, city, county, status, user_id
-      });
-
-      res.status(201).json({ message: "Contact created successfully", contact: newContact });
-    } catch (error) {
-      console.error("Error creating contact:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  },
-
-  // Get all active contacts
-  getAllContacts: async (req, res) => {
-    try {
-      const contacts = await Contact.findAll();
-      res.status(200).json(contacts);
-    } catch (error) {
-      console.error("Error fetching contacts:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  },
+// Get all contacts
+exports.getAllContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.findAll();  
+    return res.status(200).json({ success: true, data: contacts });
+  } catch (error) {
+    console.error("Error fetching contacts:", error);
+    return res.status(500).json({ success: false, message: "Error fetching contacts" });
+  }
+};
 
 // Get all soft-deleted contacts
-getAllDeletedContacts: async (req, res) => {
+exports.getAllDeletedContacts = async (req, res) => {
   try {
       const deletedContacts = await Contact.findDeleted();  
       res.status(200).json({
@@ -46,79 +34,39 @@ getAllDeletedContacts: async (req, res) => {
       console.error("Error fetching deleted contacts:", error.message);
       res.status(500).json({ message: "Internal server error", error: error.message });
   }
-},
+};
 
-  // Get a single contact by ID
-  getContactById: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const contact = await Contact.findById(id);
-
-      if (!contact) {
-        return res.status(404).json({ message: "Contact not found" });
-      }
-
-      res.status(200).json(contact);
-    } catch (error) {
-      console.error("Error fetching contact:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  },
-
-  // Get contact by name
-  getContactByName: async (req, res) => {
-    try {
-      const { name } = req.params;
-      const contact = await Contact.findByName(name);
-      
-      if (!contact) {
-        return res.status(404).json({ message: "Contact not found" });
-      }
-
-      res.status(200).json({ contact });
-    } catch (error) {
-      console.error("Error fetching contact:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  },
-
-  // Update contact by name
-  updateContact: async (req, res) => {
-    try {
-      const { name } = req.params;
-      const { phone, email, type, address, city, county, status } = req.body;
-
-      const updatedContact = await Contact.updateByName(name, {
-        phone, email, type, address, city, county, status
-      });
-
-      if (!updatedContact) {
-        return res.status(404).json({ message: "Contact not found or already deleted" });
-      }
-
-      res.status(200).json({ message: "Contact updated successfully", contact: updatedContact });
-    } catch (error) {
-      console.error("Error updating contact:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
-  },
-
-  // Delete contact by name
-  deleteContact: async (req, res) => {
-    try {
-      const { name } = req.params;
-      const deletedContact = await Contact.softDeleteByName(name);
-
-      if (!deletedContact) {
-        return res.status(404).json({ message: "Contact not found or already deleted" });
-      }
-
-      res.status(200).json({ message: "Contact deleted successfully", contact: deletedContact });
-    } catch (error) {
-      console.error("Error deleting contact:", error.message);
-      res.status(500).json({ message: "Internal server error", error: error.message });
-    }
+exports.getContactByName = async (req, res) => {
+  try {
+    const contact = await Contact.findByName(req.params.name);  
+    if (!contact) return res.status(404).json({ success: false, message: "Contact not found" });
+    return res.status(200).json({ success: true, data: contact });
+  } catch (error) {
+    console.error("Error fetching contact:", error);
+    return res.status(500).json({ success: false, message: "Error fetching contact" });
   }
 };
 
-module.exports = contactController;
+// Update a contact
+exports.updateContact = async (req, res) => {
+  try {
+    const updatedContact = await Contact.update(req.params.email, req.body);
+    if (!updatedContact) return res.status(404).json({ success: false, message: "Contact not found" });
+    return res.status(200).json({ success: true, data: updatedContact });
+  } catch (error) {
+    console.error("Error updating contact:", error);
+    return res.status(500).json({ success: false, message: "Error updating contact" });
+  }
+};
+
+// Soft delete a contact
+exports.deleteContact = async (req, res) => {
+  try {
+    const deletedContact = await Contact.softDelete(req.params.name);
+    if (!deletedContact) return res.status(404).json({ success: false, message: "Contact not found" });
+    return res.status(200).json({ success: true, data: deletedContact, message: "Contact deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting contact:", error);
+    return res.status(500).json({ success: false, message: "Error deleting contact" });
+  }
+};

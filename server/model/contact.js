@@ -23,10 +23,11 @@ const createContactsTable = async () => {
   console.log("✅ Contacts table created successfully");
 };
 
+// Run the function to create the table
 createContactsTable();
 
 const Contact = {
-  // Create a new contact
+  // Create a new contact   // tell changes in this
   create: async ({ name, phone, email, type, address, city, county, status, user_id }) => {
     const query = `
       INSERT INTO contacts (name, phone, email, type, address, city, county, status, user_id)
@@ -43,39 +44,48 @@ const Contact = {
     const result = await pool.query(query);
     return result.rows;
   },
-
+  
   // Get all deleted contacts
-  findDeleted: async () => {
+  findDeleted : async () => {
     const query = `SELECT * FROM contacts WHERE deleted_at IS NOT NULL;`;
     const result = await pool.query(query);
     return result.rows;
   },
 
-  // Get a single contact by name
+  // Get a single contact by ID
+  // findById: async (id) => {
+  //   const query = `SELECT * FROM contacts WHERE id = $1 AND deleted_at IS NULL;`;
+  //   const result = await pool.query(query, [id]);
+  //   return result.rows[0];
+  // },
+
   findByName: async (name) => {
     const query = `SELECT * FROM contacts WHERE name = $1 AND deleted_at IS NULL;`;
     const result = await pool.query(query, [name]);
     return result.rows[0];
   },
 
-  // Update contact details by name
-  updateByName: async (name, { phone, email, type, address, city, county, status }) => {
+  // Update contact details
+  update: async (email, { name, email: newEmail, phone, type, address, city, county, status }) => {
     const query = `
       UPDATE contacts 
-      SET phone = $1, email = $2, type = $3, address = $4, city = $5, county = $6, status = $7, updated_at = NOW()
-      WHERE name = $8 AND deleted_at IS NULL RETURNING *;
+      SET name = $1, email = $2, phone = $3, type = $4, address = $5, city = $6, county = $7, status = $8, updated_at = NOW()
+      WHERE email = $9 AND deleted_at IS NULL 
+      RETURNING *;
     `;
-    const values = [phone, email, type, address, city, county, status, name];
+    const values = [name, newEmail, phone, type, address, city, county, status, email];
     const result = await pool.query(query, values);
     return result.rows[0];
-  },
+},
 
-  // Soft delete a contact by name
-  softDeleteByName: async (name) => {
-    const query = `UPDATE contacts SET deleted_at = NOW() WHERE name = $1 AND deleted_at IS NULL RETURNING *;`;
+
+  // Soft delete a contact
+  softDelete: async (name) => {
+    const query = `UPDATE contacts SET deleted_at = NOW() WHERE name = $1 RETURNING *;`;
     const result = await pool.query(query, [name]);
     return result.rows[0];
   },
+
 };
 
 module.exports = Contact;
