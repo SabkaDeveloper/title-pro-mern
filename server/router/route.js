@@ -26,35 +26,30 @@ router.post("/change-password", auth, validateChangePassword, changePassword);
 // ********************************************************************************************************
 //                                      Contact Management Routes
 // ********************************************************************************************************
-router.post("/contacts", contactController.createContact);
-
+// get all deleted contacts
+router.get("/contacts/deleted",auth, contactController.getAllDeletedContacts);
 // Get all contacts
-router.get("/contacts", contactController.getAllContacts);
-
-router.get("/contacts/deleted", contactController.getAllDeletedContacts);
-// Get a specific contact by ID
-// router.get("/contacts/:id", contactController.getContactById);
-
-router.get("/contacts/:name", contactController.getContactByName);
-
+router.get("/contacts", auth,contactController.getAllContacts);
+// create contact
+router.post("/contacts",auth, contactController.createContact);
+// get a single contact
+router.get("/contacts/:name",auth, contactController.getContactByName);
 // Update a contact
-router.put("/contacts/:email", contactController.updateContact);
-
+router.patch("/contacts/:email",auth, contactController.updateContact);
 // Soft delete a contact
-router.delete("/contacts/:name", contactController.deleteContact);
+router.delete("/contacts/:name",auth, contactController.deleteContact);
 
 
 // ********************************************************************************************************
 //                                      Contact Type Management Routes
 // ********************************************************************************************************
-// Admin-only routes (Create, Delete, Restore)
-router.post("/contact-types", auth, adminAuth, contactTypeController.createContactType);
-router.delete("/contact-types/:contact_type", auth, adminAuth, contactTypeController.deleteContactType);
-router.put("/contact-types/:contact_type/restore", auth, adminAuth, contactTypeController.restoreContactType);
 
-// Public routes (Anyone can access)
-router.get("/contact-types", contactTypeController.getAllContactTypes);
-router.get("/contact-types/:contact_type", contactTypeController.getContactTypeByName);
+// get all Contact Types
+router.get("/contact-types",auth, contactTypeController.getAllContactTypes);
+router.post("/contact-types", auth, contactTypeController.createContactType);
+router.delete("/contact-types/:contact_type", auth, contactTypeController.deleteContactType);
+router.put("/contact-types/:contact_type/restore", auth, contactTypeController.restoreContactType);
+router.get("/contact-types/:contact_type",auth, contactTypeController.getContactTypeByName);
 
 // ********************************************************************************************************
 //                                      Order Management Routes
