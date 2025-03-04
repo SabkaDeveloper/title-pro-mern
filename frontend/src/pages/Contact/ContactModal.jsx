@@ -1,236 +1,174 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button, Modal, Form, Row, Col } from 'react-bootstrap';
 import { useForm, Controller } from 'react-hook-form';
 import { MdAddCircleOutline } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import './Contact.css';
 
-// Function for sending POST request to create contact
+// Function to get auth token from localStorage
+const getAuthToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const tokenData = JSON.parse(token);
+    return tokenData.token || token;
+  } catch {
+    return token;
+  }
+};
 
+// Function to create a new contact
 const createContact = async (contactData, onContactAdded) => {
   try {
+    const token = getAuthToken();
+    if (!token) {
+      toast.error("Please login first!", { autoClose: 3000 });
+      window.location.href = '/login';
+      return;
+    }
+
     const response = await fetch('http://localhost:4000/api/v1/contacts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify(contactData),
+      body: JSON.stringify({ ...contactData, user_id: localStorage.getItem('userId') || 5 }),
     });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      toast.error("Session expired. Please login again.", { autoClose: 3000 });
+      window.location.href = '/login';
+      return;
+    }
 
     const data = await response.json();
     if (response.ok) {
-        toast.success(" Contact added successfully!", { autoClose: 1500 });
-        if (onContactAdded) { // Ensure the function exists before calling
-          onContactAdded(data.data);
-        }        return true;
-      } else {
-        toast.error(` Error: ${data.message}`, { autoClose: 3000 });
-        return false;
-      }
-    } catch (error) {
-      console.error("Error creating contact:", error);
-      toast.error(" An error occurred while creating the contact", {
-        autoClose: 3000,
-      });
-      return false;
+      console.log("Created Contact:", data.data); // ✅ Logs created contact
+      toast.success("Contact added successfully!", { autoClose: 1500 });
+      onContactAdded && onContactAdded(data.data);
+    } else {
+      toast.error(data.errors ? `Validation Error: ${data.errors[0].msg}` : `Error: ${data.message}`, { autoClose: 3000 });
     }
-  };
+  } catch (error) {
+    console.error("Error creating contact:", error);
+    toast.error("An error occurred while creating the contact", { autoClose: 3000 });
+  }
+};
 
-  const ContactModal = ({ onContactAdded }) => {
-    const [modalShow, setModalShow] = useState(false);
-  
-  // Initialize react-hook-form
-  const { handleSubmit, control, reset, watch, setValue } = useForm({
+
+// Contact Modal Component
+const ContactModal = ({ onContactAdded }) => {
+  const [modalShow, setModalShow] = useState(false);
+  const { handleSubmit, control, reset } = useForm({
     defaultValues: {
-      name: '',
-      phone: '',
-      email: '',
-      type: 'business',
-      address: '',
-      city: '',
-      county: '',
-      status: 'active',
-      user_id: 5, // Example user_id
+      name: '', 
+      phone: '', 
+      email: '', 
+      address: '', 
+      city: '', 
+      county: '', 
+      type: 'business', 
+      status: 'active'
     },
   });
 
-
-  // Handle form submission
   const onSubmit = (data) => {
-    createContact(data,onContactAdded); // Call the API with form data
-    setModalShow(false); // Close modal after submission
-    reset(); // Optionally reset form fields after submission
+    createContact(data, onContactAdded);
+    setModalShow(false);
+    reset();
   };
 
-  const MyVerticallyCenteredModal = ({ show, onHide }) => {
-    return (
-      <Modal
-        show={show}
-        onHide={onHide}
-        size="sm"
-        aria-labelledby="contained-modal-title-vcenter"
-        centered
-      >
+  return (
+    <div>
+      <Button className="create-contact-btn" onClick={() => setModalShow(true)}>
+        <MdAddCircleOutline /> Add Contact
+      </Button>
+
+      <Modal show={modalShow} onHide={() => setModalShow(false)} size="md" centered className="custom-modal">
         <Modal.Header closeButton>
-          <Modal.Title id="contained-modal-title-vcenter">
-            Add Contact
-          </Modal.Title>
+          <Modal.Title>Add Contact</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Form onSubmit={handleSubmit(onSubmit)}>
-            <Form.Group controlId="formName" >
-              <Form.Label className='mb-0'>Name</Form.Label>
-              <Controller
-                name="name"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter name"
-                    {...field}
-                    required
-                  />
-                )}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formPhone" className='mt-2'>
-              <Form.Label className='mb-0'>Phone</Form.Label>
-              <Controller
-                name="phone"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter phone number"
-                    {...field}
-                    required
-                  />
-                )}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formEmail" className='mt-2'>
-              <Form.Label className='mb-0'>Email</Form.Label>
-              <Controller
-                name="email"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control
-                    type="email"
-                    placeholder="Enter email"
-                    {...field}
-                    required
-                  />
-                )}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formType" className='mt-2'>
-              <Form.Label className='mb-0'>Type</Form.Label>
-              <Controller
-                name="type"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control as="select" {...field}>
-                    <option value="business">Business</option>
-                    <option value="personal">Personal</option>
-                  </Form.Control>
-                )}
-              />
-            </Form.Group>
-
-            <Form.Group controlId="formAddress" className='mt-2'>
-              <Form.Label className='mb-0'>Address</Form.Label>
-              <Controller
-                name="address"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter address"
-                    {...field}
-                    required
-                  />
-                )}
-              />
-            </Form.Group>
+            {['name', 'phone', 'email', 'address'].map((field, index) => (
+              <Form.Group key={index} controlId={`form${field}`} className="mb-3">
+                <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)} </Form.Label>
+                <Controller 
+                  name={field} 
+                  control={control} 
+                  render={({ field: controllerField }) => (
+                    <Form.Control 
+                      type="text" 
+                      placeholder={`Enter ${field}`} 
+                      {...controllerField} 
+                      required 
+                    />
+                  )} 
+                />
+              </Form.Group>
+            ))}
 
             <Row>
               <Col md={6}>
-                <Form.Group controlId="formCity" className='mt-2'>
-                  <Form.Label className='mb-0'>City</Form.Label>
-                  <Controller
-                    name="county"
-                    control={control}
+                <Form.Group controlId="formCity" className="mb-3">
+                  <Form.Label>City </Form.Label>
+                  <Controller 
+                    name="city" 
+                    control={control} 
                     render={({ field }) => (
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter city"
-                        {...field}
-                        required
-                      />
-                    )}
+                      <Form.Control type="text" placeholder="Enter city" {...field} required />
+                    )} 
                   />
                 </Form.Group>
               </Col>
-
               <Col md={6}>
-                <Form.Group controlId="formCounty" className='mt-2'>
-                  <Form.Label className='mb-0'>County</Form.Label>
-                  <Controller
-                    name="city"
-                    control={control}
+                <Form.Group controlId="formCounty" className="mb-3">
+                  <Form.Label>County </Form.Label>
+                  <Controller 
+                    name="county" 
+                    control={control} 
                     render={({ field }) => (
-                      <Form.Control
-                        type="text"
-                        placeholder="Enter county"
-                        {...field}
-                        required
-                      />
-                    )}
+                      <Form.Control type="text" placeholder="Enter county" {...field} required />
+                    )} 
                   />
                 </Form.Group>
               </Col>
             </Row>
 
-            <Form.Group controlId="formStatus" className='mt-2'>
-              <Form.Label className='mb-0'>Status</Form.Label>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <Form.Control as="select" {...field}>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </Form.Control>
-                )}
-              />
-            </Form.Group>
+            {['type', 'status'].map((field, index) => (
+              <Form.Group key={index} controlId={`form${field}`} className="mb-3">
+                <Form.Label>{field.charAt(0).toUpperCase() + field.slice(1)} </Form.Label>
+                <Controller 
+                  name={field} 
+                  control={control} 
+                  render={({ field: controllerField }) => (
+                    <Form.Control as="select" {...controllerField} required>
+                      {field === 'type' ? (
+                        <>
+                          <option value="business">Business</option>
+                          <option value="personal">Personal</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="active">Active</option>
+                          <option value="inactive">Inactive</option>
+                        </>
+                      )}
+                    </Form.Control>
+                  )} 
+                />
+              </Form.Group>
+            ))}
 
-            <Button style={{marginTop: "10px"}} variant="success" type="submit">
-              Submit
-            </Button>
+            <Button type="submit" className="custom-submit-btn w-100">Submit</Button>
           </Form>
         </Modal.Body>
       </Modal>
-    );
-  };
-
-  return (
-    <div>
-      <Button variant="primary" onClick={() => setModalShow(true)}>
-        <div className='fw-bold'> 
-      <MdAddCircleOutline /> Add
-        </div>
-      </Button>
-
-      <MyVerticallyCenteredModal
-        show={modalShow}
-        onHide={() => setModalShow(false)}
-      />
     </div>
   );
-}
+};
 
 export default ContactModal;

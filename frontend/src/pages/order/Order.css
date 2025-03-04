@@ -1,0 +1,49 @@
+/* Orders.css */
+
+.container-fluid {
+    padding: 20px;
+  }
+  
+  .search-bar {
+    max-width: 250px;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+  }
+  
+  .custom-table thead th {
+    background-color: skyblue;
+    font-weight: 600;
+    text-align: center;
+    font-style: inherit;
+    padding: 10px;
+    border-bottom: 2px solid #dee2e6;
+  }
+  
+  .custom-table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .custom-table tbody td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .text-primary {
+    color: #007bff;
+    font-weight: bold;
+  }
+  
+  .pagination {
+    margin-top: 15px;
+  }
+  

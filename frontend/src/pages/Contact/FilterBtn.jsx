@@ -4,19 +4,98 @@ import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MdDeleteForever } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
 
-const FilterBtn = ({ onDeleteSuccess }) => {
+const FilterBtn = ({ contact, onDeleteSuccess }) => {
+  const navigate = useNavigate();
+
+  // Add token utility function
+  const getAuthToken = () => {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    try {
+      const tokenData = JSON.parse(token);
+      return tokenData.token || token;
+    } catch {
+      return token;
+    }
+  };
+
+  const handleDelete = async (name) => {
+    if (!name) {
+      toast.error("Contact name is required!");
+      return;
+    }
+
+    try {
+      const token = getAuthToken();
+      
+      if (!token) {
+        toast.error("Please login first!");
+        navigate('/login');
+        return;
+      }
+
+      // Confirm before deletion
+      if (!window.confirm(`Are you sure you want to delete contact: ${name}?`)) {
+        return;
+      }
+
+      console.log('Deleting contact with token:', token); // Debug log
+
+      const response = await fetch(`http://localhost:4000/api/v1/contacts/${encodeURIComponent(name)}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Delete response status:', response.status); // Debug log
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        toast.error("Session expired. Please login again.");
+        navigate('/login');
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Delete response data:', data); // Debug log
+
+      if (response.ok) {
+        toast.success("Contact deleted successfully!");
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
+      } else {
+        toast.error(data.message || "Failed to delete contact");
+      }
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+      toast.error("An error occurred while deleting the contact");
+    }
+  };
+
   return (
     <div className="d-flex justify-content-center align-items-center">
-      <FlyoutLink onDeleteSuccess={onDeleteSuccess}>
+      <FlyoutLink 
+        onDeleteSuccess={handleDelete}
+        contactName={contact?.name}
+      >
         <MdDeleteForever /> Delete
       </FlyoutLink>
     </div>
   );
 };
 
-const FlyoutLink = ({ children, onDeleteSuccess }) => {
-  const [inputValue, setInputValue] = useState("");
+const FlyoutLink = ({ children, onDeleteSuccess, contactName }) => {
+  const [inputValue, setInputValue] = useState(contactName || "");
   const [showPopover, setShowPopover] = useState(false);
 
   const handleDelete = async () => {
@@ -25,30 +104,12 @@ const FlyoutLink = ({ children, onDeleteSuccess }) => {
       return;
     }
 
-    try {
-      const response = await fetch(`http://localhost:4000/api/v1/contacts/${inputValue}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(`Contact ${inputValue} deleted successfully!`, { position: "top-right" });
-
-        // Call onDeleteSuccess to update the UI dynamically
-        if (typeof onDeleteSuccess === "function") {
-          onDeleteSuccess(inputValue);
-        }
-
-        setInputValue(""); // Clear input
-        setShowPopover(false); // Close popover
-      } else {
-        toast.error(`Error: ${data.message || "Failed to delete contact"}`, { position: "top-right" });
-      }
-    } catch (error) {
-      console.error("Error deleting contact:", error);
-      toast.error("Failed to delete contact. Please try again.", { position: "top-right" });
+    // Call the parent's delete handler
+    if (typeof onDeleteSuccess === "function") {
+      await onDeleteSuccess(inputValue);
     }
+    
+    setShowPopover(false); // Close popover
   };
 
   const popover = (

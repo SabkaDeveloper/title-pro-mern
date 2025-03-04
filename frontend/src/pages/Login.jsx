@@ -6,6 +6,17 @@ import { useNavigate } from "react-router-dom";
 import validator from "validator";
 import axios from "axios";
 
+// Add this utility function at the top
+const setTokenWithExpiry = (token, user) => {
+  const now = new Date();
+  const item = {
+    token: token,
+    user: user,
+    expiry: now.getTime() + 24 * 60 * 60 * 1000, // 24 hours from now
+  };
+  localStorage.setItem('token', JSON.stringify(item));
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [emailOrPhone, setEmailOrPhone] = useState("");
@@ -28,11 +39,11 @@ const Login = () => {
     setErrors(newErrors);
   
     if (newErrors.email || newErrors.password) {
-      return; // Don't proceed if there are validation errors
+      return;
     }
   
     setLoading(true);
-    setApiError(""); // Clear any previous errors
+    setApiError("");
   
     try {
       const response = await axios.post(
@@ -43,19 +54,16 @@ const Login = () => {
         }
       );
   
-      // Log the full response
-      console.log("Full API Response:", response);
-  
-      // Log only the data part if preferred
       console.log("API Response Data:", response.data);
   
       const { token, user } = response.data;
   
-      // Store token and user in localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Store token with expiration
+      setTokenWithExpiry(token, user);
+      
+      // Store user ID separately if needed
+      localStorage.setItem('userId', user.id);
   
-      // Redirect after successful login
       navigate("/");
     } catch (error) {
       console.error("Login failed", error.response?.data?.message || error.message);
@@ -164,6 +172,40 @@ const Login = () => {
       </Card>
     </div>
   );
+};
+
+// Add these utility functions that you can use across your app
+export const getToken = () => {
+  const tokenString = localStorage.getItem('token');
+  if (!tokenString) {
+    return null;
+  }
+
+  try {
+    const item = JSON.parse(tokenString);
+    const now = new Date();
+    
+    // Check if the token has expired
+    if (now.getTime() > item.expiry) {
+      // Token has expired, remove it
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      return null;
+    }
+    
+    return item.token;
+  } catch {
+    return null;
+  }
+};
+
+export const isAuthenticated = () => {
+  return getToken() !== null;
+};
+
+export const clearToken = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userId');
 };
 
 export default Login;

@@ -5,11 +5,25 @@ import { FaSearch } from "react-icons/fa";
 import { useForm, Controller } from "react-hook-form";
 import ContactModal from "./ContactModal"; 
 import FilterBtn from "./FilterBtn";
+import { toast } from "react-hot-toast";
+import './ContactList.css'
+const getAuthToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  try {
+    const tokenData = JSON.parse(token);
+    return tokenData.token || token;
+  } catch {
+    return token;
+  }
+};
 
 const ContactList = () => {
   const navigate = useNavigate();
   const [activePage, setActivePage] = useState(1);
   const [contacts, setContacts] = useState([]);
+  const [filteredContacts, setFilteredContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
@@ -43,29 +57,93 @@ const ContactList = () => {
   // Fetch all contacts
   const fetchAllContacts = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/v1/contacts");
-      const data = await response.json();
+      const token = getAuthToken();
+      
+      if (!token) {
+        console.log('No token found');
+        navigate('/login');
+        return;
+      }
 
-      if (data.success && Array.isArray(data.data)) {
-        setContacts(data.data);
+      console.log('Fetching contacts with token:', token); // Debug log
+
+      const response = await fetch("http://localhost:4000/api/v1/contacts", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Response status:', response.status); // Debug log
+
+      if (response.status === 401) {
+        console.log('Unauthorized access');
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Fetched data:', data); // Debug log
+
+      // Don't clear contacts if the response is empty or invalid
+      if (!data) {
+        console.error('Empty response from server');
+        return;
+      }
+
+      // Check for different possible data structures
+      let contactsArray = [];
+      if (data.contacts) {
+        contactsArray = data.contacts;
+      } else if (data.data) {
+        contactsArray = Array.isArray(data.data) ? data.data : [data.data];
+      } else if (Array.isArray(data)) {
+        contactsArray = data;
+      }
+
+      // Only update state if we have contacts
+      if (contactsArray.length > 0) {
+        setContacts(contactsArray);
+        setFilteredContacts(contactsArray);
+        console.log('Contacts set:', contactsArray); // Debug log
       } else {
-        setContacts([]);
+        console.log('No contacts found in response');
+        // Don't clear existing contacts if the response is empty
+        // Only clear if explicitly told by the API that there are no contacts
+        if (response.ok && data.success === false) {
+          setContacts([]);
+          setFilteredContacts([]);
+        }
       }
     } catch (error) {
       console.error("Error fetching contacts:", error);
-      setContacts([]);
+      // Don't clear contacts on error, just show error message
+      toast.error("Error fetching contacts. Please try again later.");
     }
   };
 
   const handleDeleteSuccess = (deletedContact) => {
-    setContacts((prevContacts) => prevContacts.filter((contact) => contact.name !== deletedContact));
+    setContacts((prevContacts) => {
+      const updatedContacts = prevContacts.filter((contact) => contact.name !== deletedContact);
+      setFilteredContacts(updatedContacts); // Update filtered contacts as well
+      return updatedContacts;
+    });
   };
 
   // Fetch contacts by search term
   const fetchContactsBySearch = async (searchTerm) => {
     try {
-      if (!searchTerm) {
-        fetchAllContacts();
+      const token = getAuthToken();
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      if (!searchTerm.trim()) {
+        // Don't fetch all contacts, just reset filters
+        setFilteredContacts(contacts);
         return;
       }
 
@@ -73,26 +151,74 @@ const ContactList = () => {
         ? `http://localhost:4000/api/v1/contacts/${encodeURIComponent(searchTerm)}`
         : `http://localhost:4000/api/v1/contacts/${searchTerm}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.success) {
-        setContacts(Array.isArray(data.data) ? data.data : [data.data]);
+      if (response.ok) {
+        const searchResults = Array.isArray(data.contacts) ? data.contacts : 
+                            Array.isArray(data.data) ? data.data : 
+                            [data.data].filter(Boolean);
+        
+        // Only update filtered contacts, keep original contacts intact
+        setFilteredContacts(searchResults);
       } else {
-        setContacts([]);
+        // Show no results but keep original contacts
+        setFilteredContacts([]);
+        toast.info("No contacts found matching your search.");
       }
     } catch (error) {
-      console.error("Error fetching searched contacts:", error);
-      setContacts([]);
+      console.error("Error searching contacts:", error);
+      toast.error("Error searching contacts. Please try again.");
+      // Don't clear contacts on error
     }
   };
 
   useEffect(() => {
-    fetchAllContacts();
-  }, []);
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    
+    // Only fetch if contacts array is empty
+    if (contacts.length === 0) {
+      console.log('Component mounted, fetching contacts...'); // Debug log
+      fetchAllContacts();
+    }
+  }, [navigate]); // Remove contacts from dependency array
 
-  const handleSearch = () => {
-    fetchContactsBySearch(searchTerm);
+  // Add this debug useEffect
+  useEffect(() => {
+    console.log('Current contacts state:', contacts);
+    console.log('Current filtered contacts:', filteredContacts);
+  }, [contacts, filteredContacts]);
+
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm) {
+      setFilteredContacts(contacts);
+      return;
+    }
+
+    const filtered = contacts.filter(contact => 
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.type.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setFilteredContacts(filtered);
   };
 
   const handleContactClick = (contact) => {
@@ -100,7 +226,7 @@ const ContactList = () => {
     setShowModal(true);
   };
 
-  const totalPages = Math.max(1, Math.ceil(contacts.length / contactsPerPage));
+  const totalPages = Math.max(1, Math.ceil(filteredContacts.length / contactsPerPage));
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -109,7 +235,7 @@ const ContactList = () => {
   };
 
   const startIndex = (activePage - 1) * contactsPerPage;
-  const displayedContacts = contacts.slice(startIndex, startIndex + contactsPerPage);
+  const displayedContacts = filteredContacts.slice(startIndex, startIndex + contactsPerPage);
 
   // Handle contact update
   const handleContactUpdate = (updatedContact) => {
@@ -119,10 +245,15 @@ const ContactList = () => {
         contact.id === updatedContact.id ? updatedContact : contact
       )
     );
+    setFilteredContacts(prevContacts => 
+      prevContacts.map(contact => 
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
+    );
   };
 
   return (
-    <Container fluid>
+    <Container fluid className="w-full" >
       <h3 className="mt-1">Contact List</h3>
 
       {/* Tabs */}
@@ -153,7 +284,7 @@ const ContactList = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <Button variant="outline-secondary" onClick={handleSearch}>
+            <Button variant="outline-secondary" onClick={() => fetchContactsBySearch(searchTerm)}>
               <FaSearch />
             </Button>
           </div>
@@ -164,7 +295,11 @@ const ContactList = () => {
         </Col>
 
         <Col xs={6} sm={3} md="auto">
-        <FilterBtn onDeleteSuccess={handleDeleteSuccess} />
+          <FilterBtn 
+            contact={selectedContact}
+            onDeleteSuccess={handleDeleteSuccess}
+            onSearch={handleSearch}
+          />
         </Col>
         {/* <Col xs={6} sm={3} md="auto">
           <UpdateBtn />
@@ -172,8 +307,14 @@ const ContactList = () => {
       </Row>
 
       {/* Contacts Table */}
-      <div className="table-responsive">
-        <Table striped bordered hover className="small w-200">
+      <div className="table-responsive" style={{ overflowX: 'auto' }}>
+        <Table 
+          striped 
+          bordered 
+          hover 
+          className="small" 
+          style={{ minWidth: '1200px' }}
+        >
           <thead>
                 <tr>
         <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Name</th>
@@ -215,6 +356,7 @@ const ContactList = () => {
         onHide={() => setShowModal(false)}
         contact={selectedContact}
         onContactUpdated={handleContactUpdate}
+        size="lg"
       />
 
       {/* Pagination */}
@@ -307,9 +449,10 @@ const MyVerticallyCenteredModal = ({ show, onHide, contact, onContactUpdated }) 
     <Modal
       show={show}
       onHide={onHide}
-      size="sm"
+      size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
+      dialogClassName="modal-90w"
     >
       <Modal.Header closeButton>
         <Modal.Title id="contained-modal-title-vcenter">
@@ -467,5 +610,29 @@ const MyVerticallyCenteredModal = ({ show, onHide, contact, onContactUpdated }) 
     </Modal>
   );
 };
+
+// Add this CSS either in your component or in a separate CSS file
+const styles = `
+  .modal-90w {
+    min-width: 100%;
+    max-width: 1200px;
+  }
+
+  .table-responsive {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  }
+`;
+
+// Add the styles to the document
+const styleSheet = document.createElement("style");
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default ContactList;

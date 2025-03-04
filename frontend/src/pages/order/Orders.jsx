@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Table, Pagination, Form, Button, InputGroup } from "react-bootstrap";
-import { FaSearch, FaPlus, FaFilter, FaDownload, FaClipboardList } from "react-icons/fa";
-import { useNavigate } from "react-router-dom"; 
+import { Table, Pagination, Form, Button, InputGroup, Modal } from "react-bootstrap";
+import { FaSearch, FaPlus, FaFilter, FaDownload } from "react-icons/fa";
+import axios from "axios";
 import CreateOrder from "./CreateOrder";
-import axios from "axios"; // Import Axios for API requests
 
 const ContactList = () => {
-  const navigate = useNavigate(); 
   const [activePage, setActivePage] = useState(1);
-  const [orders, setOrders] = useState([]); // State to hold the fetched orders
+  const [orders, setOrders] = useState([]);
+  const [showCreateOrderModal, setShowCreateOrderModal] = useState(false);
+
   const contactsPerPage = 12;
 
-  // Fetch orders from the API when the component mounts
   const fetchOrders = async () => {
     try {
       const response = await axios.get('http://localhost:4000/api/v1/orders');
       if (response.data && response.data.data) {
-        setOrders(response.data.data); // Update the state with fetched orders
+        setOrders(response.data.data);
       } else {
         console.error("No orders found in the response.");
       }
@@ -26,16 +25,10 @@ const ContactList = () => {
   };
 
   useEffect(() => {
-    fetchOrders(); // Fetch orders when the component mounts
-
-    // Set up polling to fetch new orders every 10 seconds
-    const intervalId = setInterval(() => {
-      fetchOrders();
-    }, 10000); // Poll every 10 seconds
-
-    // Clean up the interval when the component is unmounted
+    fetchOrders();
+    const intervalId = setInterval(fetchOrders, 10000);
     return () => clearInterval(intervalId);
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, []);
 
   const totalPages = Math.ceil(orders.length / contactsPerPage);
 
@@ -43,10 +36,6 @@ const ContactList = () => {
     if (page >= 1 && page <= totalPages) {
       setActivePage(page);
     }
-  };
-
-  const handleAddClick = () => {
-    navigate("/add-contact"); 
   };
 
   const startIndex = (activePage - 1) * contactsPerPage;
@@ -63,28 +52,30 @@ const ContactList = () => {
           <InputGroup.Text><FaSearch /></InputGroup.Text>
         </InputGroup>
         <div className="d-flex flex-wrap gap-2 justify-content-center">
-          <CreateOrder setOrders={setOrders} />
-          <Button variant="primary"><FaPlus /></Button>
+          <Button variant="success" onClick={() => setShowCreateOrderModal(true)}>
+            <FaPlus /> Create Order
+          </Button>
           <Button variant="primary"><FaFilter /></Button>
           <Button variant="primary"><FaDownload /></Button>
         </div>
       </div>
 
+      {/* Orders Table */}
       <div className="table-responsive w-100">
         <Table striped bordered hover className="small w-100">
           <thead>
             <tr>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Arrival Date</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Delivery Date</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Order Number</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Customer</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Priority</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Transaction Type</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Data Source</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>State</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>County</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Active Workflow</th>
-              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center', fontStyle: 'inherit' }}>Assigned To</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Arrival Date</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Delivery Date</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Order Number</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Customer</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Priority</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Transaction Type</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Data Source</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>State</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>County</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Active Workflow</th>
+              <th style={{ backgroundColor: 'skyblue', fontWeight: '600', textAlign: 'center' }}>Assigned To</th>
             </tr>
           </thead>
           <tbody>
@@ -107,6 +98,7 @@ const ContactList = () => {
         </Table>
       </div>
 
+      {/* Pagination */}
       <Pagination className="justify-content-center flex-wrap">
         <Pagination.Prev disabled={activePage === 1} onClick={() => handlePageChange(activePage - 1)} />
         {[...Array(totalPages).keys()].slice(0, 5).map((page) => (
@@ -117,6 +109,13 @@ const ContactList = () => {
         {totalPages > 5 && <Pagination.Ellipsis />}
         <Pagination.Next disabled={activePage === totalPages} onClick={() => handlePageChange(activePage + 1)} />
       </Pagination>
+
+      {/* Create Order Modal */}
+      <Modal show={showCreateOrderModal} onHide={() => setShowCreateOrderModal(false)} size="lg">
+        <Modal.Body>
+          <CreateOrder onClose={() => setShowCreateOrderModal(false)} setOrders={setOrders} />
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };

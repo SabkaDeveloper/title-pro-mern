@@ -5,6 +5,20 @@ import { FaSearch } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 import ContactTypeModel from "./Contact-TypeModel";
 import DeleteContactType from "./DeleteContactType";
+import { toast } from 'react-hot-toast';
+
+// Add token utility function
+const getAuthToken = () => {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  try {
+    const tokenData = JSON.parse(token);
+    return tokenData.token || token;
+  } catch {
+    return token;
+  }
+};
 
 const ContactTypeList = () => {
   const navigate = useNavigate();
@@ -22,19 +36,44 @@ const ContactTypeList = () => {
     },
   });
 
-  // Fetch all contacts
+  // Fetch all contacts with authentication
   const fetchAllContacts = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/v1/contact-types");
+      const token = getAuthToken();
+      
+      if (!token) {
+        console.log('No token found');
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch("http://localhost:4000/api/v1/contact-types", {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        toast.error("Session expired. Please login again.");
+        navigate('/login');
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
         setContacts(data.data);
       } else {
         setContacts([]);
+        if (data.message) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
       console.error("Error fetching contacts:", error);
+      toast.error("Error fetching contact types. Please try again.");
       setContacts([]);
     }
   };
@@ -43,9 +82,16 @@ const ContactTypeList = () => {
     setContacts((prevContacts) => prevContacts.filter((contact) => contact.id !== deletedContactId));
   };
 
-  // Fetch contacts by search term
+  // Fetch contacts by search term with authentication
   const fetchContactsBySearch = async (searchTerm) => {
     try {
+      const token = getAuthToken();
+      
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
       if (!searchTerm) {
         fetchAllContacts();
         return;
@@ -55,23 +101,46 @@ const ContactTypeList = () => {
         ? `http://localhost:4000/api/v1/contact-type/${encodeURIComponent(searchTerm)}`
         : `http://localhost:4000/api/v1/contact-type/${searchTerm}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        toast.error("Session expired. Please login again.");
+        navigate('/login');
+        return;
+      }
+
       const data = await response.json();
 
       if (data.success) {
         setContacts(Array.isArray(data.data) ? data.data : [data.data]);
       } else {
         setContacts([]);
+        if (data.message) {
+          toast.error(data.message);
+        }
       }
     } catch (error) {
-      console.error("Error fetching searched contacts:", error);
+      console.error("Error searching contacts:", error);
+      toast.error("Error searching contact types. Please try again.");
       setContacts([]);
     }
   };
 
+  // Check authentication on component mount
   useEffect(() => {
+    const token = getAuthToken();
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchAllContacts();
-  }, []);
+  }, [navigate]);
 
   const handleSearch = () => {
     fetchContactsBySearch(searchTerm);
@@ -120,13 +189,19 @@ const ContactTypeList = () => {
 
           </thead>
           <tbody>
-            {displayedContacts.map((contact, index) => (
-              <tr key={index}>
-                <td>{contact.contact_type}</td>
-                <td>{contact.slug}</td>
-                <td>{contact.user_id}</td>
+            {displayedContacts.length === 0 ? (
+              <tr>
+                <td colSpan="3" className="text-center">No contact types found</td>
               </tr>
-            ))}
+            ) : (
+              displayedContacts.map((contact, index) => (
+                <tr key={index}>
+                  <td>{contact.contact_type}</td>
+                  <td>{contact.slug}</td>
+                  <td>{contact.user_id}</td>
+                </tr>
+              ))
+            )}
           </tbody>
         </Table>
       </div>
