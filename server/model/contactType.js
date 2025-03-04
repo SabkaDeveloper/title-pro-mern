@@ -69,21 +69,22 @@ const ContactType = {
   
 
   // Restore a soft deleted contact type
-  restore: async (contact_type) => {
+  restore: async (id) => {
     try {
       const query = `
         UPDATE contact_type 
         SET deleted_at = NULL
-        WHERE contact_type = $1 
+        WHERE id = $1 
         RETURNING *;
       `;
-      const result = await pool.query(query, [contact_type]);
+      const result = await pool.query(query, [id]);
       return result.rows[0];
     } catch (error) {
       console.error("Error restoring contact type:", error.message);
       throw error;
     }
   }
+  
 };
 
 module.exports = ContactType;

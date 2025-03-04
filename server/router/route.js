@@ -51,7 +51,7 @@ router.post("/contact-types", auth, contactTypeController.createContactType);
 // soft delete a contact Type
 router.delete("/contact-types/:id", auth, contactTypeController.deleteContactType);
 // Update a contact Type
-router.patch("/contact-types/:contact_type", auth, contactTypeController.restoreContactType);
+router.patch("/contact-types/:id", auth, contactTypeController.restoreContactType);
 // get a single contact Type
 router.get("/contact-types/:id",auth, contactTypeController.getContactTypeById);
 
