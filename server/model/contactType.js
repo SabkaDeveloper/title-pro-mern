@@ -51,21 +51,22 @@ const ContactType = {
   },
 
   // Soft delete a contact type
-  softDelete: async (contact_type) => {
+  softDelete: async (id) => {
     try {
       const query = `
         UPDATE contact_type 
         SET deleted_at = NOW()
-        WHERE contact_type = $1 AND deleted_at IS NULL 
+        WHERE id = $1 AND deleted_at IS NULL
         RETURNING *;
       `;
-      const result = await pool.query(query, [contact_type]);
+      const result = await pool.query(query, [id]);
       return result.rows[0];
     } catch (error) {
       console.error("Error soft deleting contact type:", error.message);
       throw error;
     }
   },
+  
 
   // Restore a soft deleted contact type
   restore: async (contact_type) => {

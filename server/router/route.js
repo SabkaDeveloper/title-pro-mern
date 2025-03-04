@@ -49,7 +49,7 @@ router.get("/contact-types",auth, contactTypeController.getAllContactTypes);
 // create a contact Type
 router.post("/contact-types", auth, contactTypeController.createContactType);
 // soft delete a contact Type
-router.delete("/contact-types/:contact_type", auth, contactTypeController.deleteContactType);
+router.delete("/contact-types/:id", auth, contactTypeController.deleteContactType);
 // Update a contact Type
 router.patch("/contact-types/:contact_type", auth, contactTypeController.restoreContactType);
 // get a single contact Type
@@ -58,13 +58,21 @@ router.get("/contact-types/:id",auth, contactTypeController.getContactTypeById);
 // ********************************************************************************************************
 //                                      Order Management Routes
 // ********************************************************************************************************
-router.post("/orders", orderController.createOrder);
-router.get("/orders", orderController.getAllOrders);
-router.get("/orders/deleted", orderController.getAllDeletedOrders);
-router.get("/orders/completed", orderController.getAllCompletedOrders);
-router.get("/orders/:id", orderController.getOrderById);
-router.put("/orders/:id", orderController.updateOrder);
-router.delete("/orders/:id", orderController.deleteOrder);
+
+// get all orders
+router.get("/orders",auth, orderController.getAllOrders);
+// create an order
+router.post("/orders", auth, orderController.createOrder);
+// get all soft deleted orders
+router.get("/orders/deleted",auth, orderController.getAllDeletedOrders);
+// get all completed orders
+router.get("/orders/completed",auth, orderController.getAllCompletedOrders);
+// get a single order by Id
+router.get("/orders/:id",auth, orderController.getOrderById);
+// update an order
+router.patch("/orders/:id",auth, orderController.updateOrder);
+// delete an order
+router.delete("/orders/:id",auth, orderController.deleteOrder);
 
 // ********************************************************************************************************
 //                                      Order Entry Management Routes

@@ -37,32 +37,33 @@ exports.createContactType = async (req, res) => {
 
 // Soft Delete Contact Type 
 exports.deleteContactType = [
-    // Validation
-    param('contact_type').notEmpty().withMessage('Contact type is required'),
+  // Validation
+  param('id').notEmpty().withMessage('ID is required').isInt().withMessage('ID must be an integer'),
 
-    // Controller
-    async (req, res) => {
-        try {
-            // Check for validation errors
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ success: false, errors: errors.array() });
-            }
+  // Controller
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+      }
 
-            const { contact_type } = req.params;
+      const { id } = req.params;
 
-            const deletedContactType = await ContactType.softDelete(contact_type);
-            if (!deletedContactType) {
-                return res.status(404).json({ success: false, message: "Contact type not found" });
-            }
+      const deletedContactType = await ContactType.softDelete(id);
+      if (!deletedContactType) {
+        return res.status(404).json({ success: false, message: "Contact type not found" });
+      }
 
-            return res.status(200).json({ success: true, message: "Contact type soft deleted successfully" });
-        } catch (error) {
-            console.error("Error deleting contact type:", error);
-            return res.status(500).json({ success: false, message: "Error deleting contact type", error : error.detail });
-        }
+      return res.status(200).json({ success: true, message: "Contact type soft deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting contact type:", error);
+      return res.status(500).json({ success: false, message: "Error deleting contact type", error: error.detail });
     }
+  }
 ];
+
 
 // Restore Soft Deleted Contact Type 
 exports.restoreContactType = [

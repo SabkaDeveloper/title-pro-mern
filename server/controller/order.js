@@ -1,17 +1,33 @@
+const { body, validationResult } = require('express-validator');
 const Order = require("../model/orders");
 
 // Create a new order
-exports.createOrder = async (req, res) => {
-  try {
-    const { customer, state, county, product_type, transaction_type, data_source, workflow_group } = req.body;
-    const newOrder = await Order.create({ customer, state, county, product_type, transaction_type, data_source, workflow_group });
+exports.createOrder = [
+  // Validate and sanitize input data
+  body('customer').notEmpty().withMessage('Customer is required').trim(),
+  body('state').notEmpty().withMessage('State is required').trim(),
+  body('county').notEmpty().withMessage('County is required').trim(),
+  body('product_type').notEmpty().withMessage('Product type is required').trim(),
+  body('transaction_type').notEmpty().withMessage('Transaction type is required').trim(),
+  body('workflow_group').notEmpty().withMessage('Workflow group is required').trim(),
 
-    return res.status(201).json({ success: true, data: newOrder });
-  } catch (error) {
-    console.error("❌ Error creating order:", error);
-    return res.status(500).json({ success: false, message: error.message || "Error creating order" });
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    try {
+      const { customer, state, county, product_type, transaction_type, data_source, workflow_group } = req.body;
+      const newOrder = await Order.create({ customer, state, county, product_type, transaction_type, data_source, workflow_group });
+
+      return res.status(201).json({ success: true, data: newOrder });
+    } catch (error) {
+      console.error("❌ Error creating order:", error);
+      return res.status(500).json({ success: false, message: error.message || "Error creating order" });
+    }
   }
-};
+];
 
 // Get all active orders
 exports.getAllOrders = async (req, res) => {
@@ -49,11 +65,15 @@ exports.getAllCompletedOrders = async (req, res) => {
 // Get a specific order by ID
 exports.getOrderById = async (req, res) => {
   try {
-    const orderId = parseInt(req.params.id, 10);
-    if (isNaN(orderId)) return res.status(400).json({ success: false, message: "Invalid order ID" });
+    const orderId = req.params.id;
+    if (!orderId || isNaN(orderId)) {
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
+    }
 
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
 
     return res.status(200).json({ success: true, data: order });
   } catch (error) {
@@ -63,31 +83,54 @@ exports.getOrderById = async (req, res) => {
 };
 
 // Update an order
-exports.updateOrder = async (req, res) => {
-  try {
-    const orderId = parseInt(req.params.id, 10);
-    if (isNaN(orderId)) return res.status(400).json({ success: false, message: "Invalid order ID" });
+exports.updateOrder = [
+  // Validate input fields
+  body('customer').notEmpty().withMessage('Customer is required').trim(),
+  body('state').notEmpty().withMessage('State is required').trim(),
+  body('county').notEmpty().withMessage('County is required').trim(),
+  body('product_type').notEmpty().withMessage('Product type is required').trim(),
+  body('transaction_type').notEmpty().withMessage('Transaction type is required').trim(),
+  body('workflow_group').notEmpty().withMessage('Workflow group is required').trim(),
 
-    const { customer, state, county, product_type, transaction_type, data_source, workflow_group } = req.body;
-    const updatedOrder = await Order.update(orderId, { customer, state, county, product_type, transaction_type, data_source, workflow_group });
+  async (req, res) => {
+    const orderId = req.params.id;
+    if (!orderId || isNaN(orderId)) {
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
+    }
 
-    if (!updatedOrder) return res.status(404).json({ success: false, message: "Order not found" });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
 
-    return res.status(200).json({ success: true, data: updatedOrder });
-  } catch (error) {
-    console.error("❌ Error updating order:", error);
-    return res.status(500).json({ success: false, message: error.message || "Error updating order" });
+    try {
+      const { customer, state, county, product_type, transaction_type, data_source, workflow_group } = req.body;
+      const updatedOrder = await Order.update(orderId, { customer, state, county, product_type, transaction_type, data_source, workflow_group });
+
+      if (!updatedOrder) {
+        return res.status(404).json({ success: false, message: "Order not found" });
+      }
+
+      return res.status(200).json({ success: true, data: updatedOrder });
+    } catch (error) {
+      console.error("❌ Error updating order:", error);
+      return res.status(500).json({ success: false, message: error.message || "Error updating order" });
+    }
   }
-};
+];
 
 // Soft delete an order
 exports.deleteOrder = async (req, res) => {
   try {
-    const orderId = parseInt(req.params.id, 10);
-    if (isNaN(orderId)) return res.status(400).json({ success: false, message: "Invalid order ID" });
+    const orderId = req.params.id;
+    if (!orderId || isNaN(orderId)) {
+      return res.status(400).json({ success: false, message: "Invalid order ID" });
+    }
 
     const deletedOrder = await Order.softDelete(orderId);
-    if (!deletedOrder) return res.status(404).json({ success: false, message: "Order not found" });
+    if (!deletedOrder) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
 
     return res.status(200).json({ success: true, data: deletedOrder, message: "Order deleted successfully" });
   } catch (error) {
