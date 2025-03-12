@@ -29,7 +29,7 @@ router.post("/change-password", auth, validateChangePassword, changePassword);
 // get all deleted contacts
 router.get("/contacts/deleted",auth, contactController.getAllDeletedContacts);
 // Get all contacts
-router.get("/contacts", auth,contactController.getAllContacts);
+router.get("/contacts",auth,contactController.getAllContacts);
 // create contact
 router.post("/contacts",auth, contactController.createContact);
 // get a single contact

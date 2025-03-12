@@ -1,0 +1,127 @@
+/* Main container */
+.order-processing-container {
+    margin-left: 5.7rem;
+    margin-right: -6.0rem;
+    max-width: 1500px;
+    background-color: #fff;
+    font-size: small;
+  }
+  
+  /* Header styling */
+  .order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #f8f9fa;
+    color: #2196f3 !important;
+
+  }
+  
+  .header-title {
+    margin: 0;
+    font-weight: 400;
+    font-size: 1.1rem;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .icon-button {
+    background: none;
+    border: none;
+    color: #2196f3 !important;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Table styling */
+  .table {
+    margin-bottom: 0;
+    width: 100%;
+  }
+  
+  .column-header {
+    background-color: #E7F4FB !important;
+    color: #2196f3 !important;
+    font-weight: 400;
+    padding: 10px 8px;
+    white-space: nowrap;
+  }
+  
+  .table tbody td {
+    color: #6c757d !important; /* Bootstrap muted text color */
+  }
+  
+  
+  .table td {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+  }
+  
+  /* Custom checkbox */
+  .custom-checkbox {
+    width: 20px;
+    height: 20px;
+    background-color: #2196f3;
+    border-color: #2196f3;
+    cursor: pointer;
+  }
+  
+  .custom-checkbox:not(:checked) {
+    background-color: #fff;
+  }
+  
+  /* Redacted text */
+  /* .redacted-text {
+    background-color: #000;
+    color: #000;
+    padding: 0 16px;
+  }
+   */
+  /* Operations column */
+  .operations-column {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    
+  }
+  
+  .operation-button {
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .edit-button {
+    color: #2196f3 !important;
+  }
+  
+  .delete-button {
+    color: #dc3545;
+  }
+  
+  /* Ensure table is responsive */
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  /* Alternating row colors */
+  .table tbody tr:nth-child(odd) {
+    background-color: #fff;
+  }
+  
+  /* Info row styling */
+  .bg-info.bg-opacity-10 {
+    background-color: rgba(13, 202, 240, 0.1) !important;
+  }
+  
+  

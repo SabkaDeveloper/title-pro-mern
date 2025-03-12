@@ -1,0 +1,10 @@
+/* Disable horizontal scrolling for the entire page */
+body {
+    overflow-x: hidden;
+  }
+  
+  /* Optional: ensure the table takes full width */
+  .table {
+    width: 100%;
+  }
+  

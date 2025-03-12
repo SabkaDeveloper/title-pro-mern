@@ -1,0 +1,255 @@
+import React, { useState, useEffect } from 'react';
+import { Button, Modal, Form, Row, Col } from 'react-bootstrap';
+import { useForm, Controller } from 'react-hook-form';
+import { MdAddCircleOutline } from 'react-icons/md';
+import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
+// Function for sending POST request to create contact
+
+const createContact = async (contactData, onContactAdded) => {
+  try {
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      console.error("No token found, please log in.");
+      toast.error("No token found, please log in.", { autoClose: 3000 });
+      return false;
+    }
+
+    const response = await fetch('http://localhost:4000/api/v1/contacts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, // Add the Authorization header with the token
+
+      },
+      body: JSON.stringify(contactData),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        toast.success(" Contact added successfully!", { autoClose: 1500 });
+        if (onContactAdded) { // Ensure the function exists before calling
+          onContactAdded(data.data);
+        }        return true;
+      } else {
+        toast.error(` Error: ${data.message}`, { autoClose: 3000 });
+        return false;
+      }
+    } catch (error) {
+      console.error("Error creating contact:", error);
+      toast.error(" An error occurred while creating the contact", {
+        autoClose: 3000,
+      });
+      return false;
+    }
+  };
+
+  const ContactModal = ({ onContactAdded }) => {
+    const [modalShow, setModalShow] = useState(false);
+  
+  // Initialize react-hook-form
+  const { handleSubmit, control, reset, watch, setValue } = useForm({
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+      type: 'business',
+      address: '',
+      city: '',
+      county: '',
+      status: 'active',
+      user_id: 5, // Example user_id
+    },
+  });
+
+
+  // Handle form submission
+  const onSubmit = (data) => {
+    createContact(data,onContactAdded); // Call the API with form data
+    setModalShow(false); // Close modal after submission
+    reset(); // Optionally reset form fields after submission
+  };
+
+  const MyVerticallyCenteredModal = ({ show, onHide }) => {
+    return (
+      <Modal
+        show={show}
+        onHide={onHide}
+        size="md"
+        aria-labelledby="contained-modal-title-vcenter"
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="contained-modal-title-vcenter" className='h6'>
+            Add Contact
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{transform: 'translateY(-10px)', height: '565px'}}>
+          <Form onSubmit={handleSubmit(onSubmit)}>
+            <Form.Group controlId="formName" >
+              <Form.Label className='mb-0'>Name</Form.Label>
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter name"
+                    {...field}
+                    required
+                  />
+                )}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formPhone" className='mt-2'>
+              <Form.Label className='mb-0'>Phone</Form.Label>
+              <Controller
+                name="phone"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter phone number"
+                    {...field}
+                    required
+                  />
+                )}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formEmail" className='mt-2'>
+              <Form.Label className='mb-0'>Email</Form.Label>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control
+                    type="email"
+                    placeholder="Enter email"
+                    {...field}
+                    required
+                  />
+                )}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formType" className='mt-2'>
+              <Form.Label className='mb-0'>Type</Form.Label>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control as="select" {...field}>
+                    <option value="business">Business</option>
+                    <option value="personal">Personal</option>
+                  </Form.Control>
+                )}
+              />
+            </Form.Group>
+
+            <Form.Group controlId="formAddress" className='mt-2'>
+              <Form.Label className='mb-0'>Address</Form.Label>
+              <Controller
+                name="address"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter address"
+                    {...field}
+                    required
+                  />
+                )}
+              />
+            </Form.Group>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group controlId="formCity" className='mt-2'>
+                  <Form.Label className='mb-0'>City</Form.Label>
+                  <Controller
+                    name="county"
+                    control={control}
+                    render={({ field }) => (
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter city"
+                        {...field}
+                        required
+                      />
+                    )}
+                  />
+                </Form.Group>
+              </Col>
+
+              <Col md={6}>
+                <Form.Group controlId="formCounty" className='mt-2'>
+                  <Form.Label className='mb-0'>County</Form.Label>
+                  <Controller
+                    name="city"
+                    control={control}
+                    render={({ field }) => (
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter county"
+                        {...field}
+                        required
+                      />
+                    )}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Form.Group controlId="formStatus" className='mt-2'>
+              <Form.Label className='mb-0'>Status</Form.Label>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Form.Control as="select" {...field}>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </Form.Control>
+                )}
+              />
+            </Form.Group>
+                <Modal.Footer>
+            <Button 
+     className="d-flex justify-content-end bg-info"
+         style={{ marginTop: "10px" }}
+              type="submit"
+            >
+              Submit
+            </Button>
+                </Modal.Footer>
+
+          </Form>
+        </Modal.Body>
+      </Modal>
+    );
+  };
+
+  return (
+    <div>
+          <Button 
+        variant="primary" 
+        onClick={() => setModalShow(true)} 
+        className="bg-info bg-gradient fw-semibold text-white p-2 border-0 d-flex align-items-center gap-2"
+      >
+        <MdAddCircleOutline /> Add
+      </Button>
+
+
+      <MyVerticallyCenteredModal
+        show={modalShow}
+        onHide={() => setModalShow(false)}
+      />
+    </div>
+  );
+}
+
+export default ContactModal;

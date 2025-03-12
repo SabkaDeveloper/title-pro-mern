@@ -1,0 +1,136 @@
+
+  .dashboard-container {
+    position: relative; /* Ensures absolute positioning works inside */
+  }
+  
+  .heading {
+    display: flex;
+    justify-content: space-between; /* Pushes button to the right */
+    align-items: center;
+    padding-left: 1rem;
+    padding-right: 1rem; /* Add right padding for spacing */
+  }
+ 
+  
+  .manage-charts-btn {
+    position: absolute;
+    top: 0;
+    right: -6.4rem;
+  }
+  .map-container {
+    height: 47vh !important; /* Adjust the height as needed */
+  }
+  
+  .card-half {
+    width: 50vw; 
+    height: 60vh;
+  }
+.title { 
+    margin-left: 0.9rem !important;
+}
+.title-container {
+    border-bottom: 2px solid #c5bdbd; /* Ensures full-width border */
+    width: 104.5%;
+    padding-bottom: 0.5rem;
+    margin-left: -1rem; /* Push border to the left */
+    padding-left: 1rem; /* Keep text aligned properly */
+}
+
+@media screen and (max-width: 1024px) {
+  .card-half {
+    width: 80vw; 
+    height: auto;
+  }
+  .dashboard-container {
+    padding: 1rem;
+  }
+  .map-container {
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .card-half {
+    width: 90vw;
+    height: auto;
+  }
+  
+  .manage-charts-btn {
+    position: static; /* Prevents overlapping */
+    margin-top: 1rem;
+  }
+
+  .title-container {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .card-half {
+    width: 95%;
+  }
+  
+  .card-header h5 {
+    font-size: 1rem; /* Reduce heading size */
+  }
+
+  .title-container {
+    padding-left: 0.5rem;
+  }
+
+  .map-container {
+    height: 40vh;
+  }
+}
+
+.map-container {
+  height: 40vh;
+  width: 100%;
+}
+
+/* Medium screens */
+@media screen and (max-width: 1024px) {
+  .card {
+    width: 80vw;
+    height: auto;
+  }
+
+  .map-container {
+    height: 45vh;
+  }
+}
+
+/* Small screens */
+@media screen and (max-width: 768px) {
+  .card {
+    width: 90vw;
+    height: auto;
+  }
+
+  .map-container {
+    height: 50vh;
+  }
+
+  .card-header h5 {
+    font-size: 1.2rem; /* Reduce heading size */
+  }
+}
+
+/* Extra small screens */
+@media screen and (max-width: 480px) {
+  .card {
+    width: 95%;
+  }
+
+  .map-container {
+    height: 55vh;
+  }
+
+  .card-header h5 {
+    font-size: 1rem;
+  }
+}
+
+  

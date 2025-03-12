@@ -1,12 +1,10 @@
 import React, { useState } from "react";
+import { Form, Button, Card, InputGroup } from "react-bootstrap";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
+import backgroundImage from "../assets/Background.png";
 import { useNavigate } from "react-router-dom";
 import validator from "validator";
 import axios from "axios";
-import backgroundImage from "../assets/Background.png";
-
-// ✅ Import auth utilities
-import { setTokenWithExpiry } from "../utils/auth";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,125 +12,156 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
-  const [apiError, setApiError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(""); // To show API error if login fails
+  const [loading, setLoading] = useState(false); // To show loading state when calling API
 
-  // ✅ Improved validation logic
-  const validateInput = () => {
-    const isEmail = validator.isEmail(emailOrPhone);
-    const isPhone = validator.isMobilePhone(emailOrPhone, "en-IN");
-
-    return {
-      email: isEmail || isPhone ? "" : "Invalid email or phone format",
-      password: password.length >= 6 ? "" : "Password must be at least 6 characters",
-    };
-  };
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Validate inputs
-    const newErrors = validateInput();
+    const newErrors = {
+      email: validator.isEmail(emailOrPhone) ? "" : "Invalid email format",
+      password: validator.isLength(password, { min: 6 })
+        ? ""
+        : "Password must be at least 6 characters",
+    };
+  
     setErrors(newErrors);
-    if (newErrors.email || newErrors.password) return;
+  
+    if (newErrors.email || newErrors.password) {
+      return; // Don't proceed if there are validation errors
+    }
   
     setLoading(true);
-    setApiError("");
+    setApiError(""); // Clear any previous errors
   
     try {
-      const response = await axios.post("http://localhost:4000/api/v1/login", {
-        emailOrPhone,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:4000/api/v1/Login",
+        {
+          emailOrPhone,
+          password,
+        }
+      );
+  
+      // Log the full response
+      console.log("Full API Response:", response);
+  
+      // Log only the data part if preferred
+      console.log("API Response Data:", response.data);
   
       const { token, user } = response.data;
   
-      if (!token || !user) {
-        throw new Error("Invalid response from server");
-      }
+      // Store token and user in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
   
-      // ✅ Store token and user data securely
-      setTokenWithExpiry(token, user);
-  
-      // ✅ Store user ID separately in localStorage
-      localStorage.setItem("userId", user.id);
-      console.log("User ID:", user.id);
-  
-      navigate("/");
-  
-      console.log("API Response Data:", response.data);
+      // Redirect after successful login
+      navigate("/dashboard");
     } catch (error) {
-      setApiError(error.response?.data?.message || "Something went wrong! Please try again.");
+      console.error("Login failed", error.response?.data?.message || error.message);
+      setApiError(error.response?.data?.message || "Something went wrong!");
     } finally {
       setLoading(false);
     }
   };
   
-
   return (
     <div
-      className="flex justify-center items-center w-screen h-screen bg-cover bg-center"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      className="d-flex justify-content-center align-items-center"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        overflow: "hidden",
+      }}
     >
-      <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-bold text-center mb-4 text-blue-600">
-          <span className="text-gray-800">Title</span>Pro
-        </h3>
+      <Card
+        style={{
+          width: "500px",
+          height: "380px",
+          padding: "20px",
+          borderRadius: "10px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+          transform: "translateY(-69px)",
+        }}
+      >
+        <Card.Body>
+          <h3 className="text-center mb-4">
+            <span style={{ color: "#007bff" }}>Title</span>Pro
+          </h3>
 
-        {/* ✅ Show API error if exists */}
-        {apiError && (
-          <div className="bg-red-100 text-red-700 text-center py-2 mb-3 rounded">
-            {apiError}
-          </div>
-        )}
+          {apiError && (
+            <div className="alert alert-danger text-center">{apiError}</div>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          {/* ✅ Email/Phone Input */}
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Enter email or phone number"
-              className="w-full p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={emailOrPhone}
-              onChange={(e) => setEmailOrPhone(e.target.value)}
-            />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-          </div>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                type="email"
+                placeholder="Enter email"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
+              />
+              {errors.email && (
+                <div className="text-danger small">{errors.email}</div>
+              )}
+            </Form.Group>
 
-          {/* ✅ Password Input */}
-          <div className="mb-4 relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
-              className="w-full p-3 border rounded pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <span
-              className="absolute top-3 right-3 cursor-pointer text-gray-500"
-              onClick={() => setShowPassword(!showPassword)}
+            <Form.Group className="mb-3">
+              <InputGroup className="position-relative">
+                <Form.Control
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                  className="position-absolute"
+                  style={{
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    cursor: "pointer",
+                    color: "#6c757d",
+                  }}
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeSlash /> : <Eye />}
+                </span>
+              </InputGroup>
+              {errors.password && (
+                <div className="text-danger small">{errors.password}</div>
+              )}
+            </Form.Group>
+
+            <div className="text-end mb-3">
+              <span
+                className="text-primary text-decoration-none"
+                style={{ cursor: "pointer" }}
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot Password?
+              </span>
+            </div>
+
+            <Button
+              className="w-100"
+              variant="primary"
+              type="submit"
+              disabled={loading}
             >
-              {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-            </span>
-            {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
-          </div>
-
-          {/* ✅ Forgot Password */}
-          <div className="text-right mb-4">
-            <span className="text-blue-600 cursor-pointer" onClick={() => navigate("/forgot-password")}>
-              Forgot Password?
-            </span>
-          </div>
-
-          {/* ✅ Login Button */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition disabled:bg-gray-400"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-        </form>
-      </div>
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </Form>
+        </Card.Body>
+      </Card>
     </div>
   );
 };
